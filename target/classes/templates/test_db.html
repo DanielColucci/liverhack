@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba de Conexión AWS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4 bg-light">
+<div class="container">
+    <h2 class="text-success mb-4">✅ Conexión Exitosa a AWS RDS</h2>
+    <p class="lead">Si ves a los 10 candidatos aquí abajo, significa que tu código Java está leyendo correctamente la base de datos en la nube.</p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped shadow-sm">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Escolaridad</th>
+                <th>Puesto Actual</th>
+                <th>Match IA</th>
+                <th>Estatus</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Aquí Thymeleaf hace un "bucle" para imprimir cada candidato de tu base de datos -->
+            <tr th:each="candidato : ${candidatos}">
+                <td th:text="${candidato.id}"></td>
+                <td class="fw-bold" th:text="${candidato.nombre}"></td>
+                <td th:text="${candidato.escolaridad}"></td>
+                <td th:text="${candidato.puestoActual}"></td>
+                <td th:text="${candidato.compatibilidad}"></td>
+                <td>
+                    <span class="badge bg-primary" th:text="${candidato.statusProceso}"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

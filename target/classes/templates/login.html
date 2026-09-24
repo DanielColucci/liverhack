@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" class="h-full bg-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIVERHACK 2026 | Acceso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { liverpool: { DEFAULT: '#E10098', dark: '#B00076', pink: '#E10098', purple: '#4A0050' } } } } }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+<div class="flex min-h-screen w-full bg-white z-10">
+    <!-- PANEL IZQUIERDO: Branding -->
+    <div class="relative hidden w-0 flex-1 lg:block">
+        <img class="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop" alt="Corporativo">
+        <div class="absolute inset-0 bg-liverpool/90 mix-blend-multiply"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+        <div class="absolute inset-0 flex flex-col p-16 z-10">
+
+            <!-- AQUÍ SE AGREGÓ EL LOGO PARA ESCRITORIO -->
+            <div class="flex items-center text-white font-black text-3xl tracking-tighter">
+                <img th:src="@{/img/logo.png}" alt="Logo Liverpool" class="w-12 h-12 rounded-xl mr-3 shadow-md object-cover bg-white">
+                Liverpool
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center">
+                <div class="max-w-lg glass-panel p-10 rounded-3xl shadow-2xl">
+                    <div class="inline-flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-widest mb-6">
+                        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                        <span>Proyecto Liverhack 2026</span>
+                    </div>
+                    <h1 class="text-4xl font-extrabold text-white tracking-tight leading-tight mb-4">
+                        Atracción de talento <br><span class="text-pink-200">inteligente y proactiva.</span>
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL DERECHO: Formulario conectado a Java -->
+    <div class="flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:flex-none lg:w-[500px] xl:w-[600px] bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.1)] h-screen">
+        <div class="mx-auto w-full max-w-sm lg:max-w-md py-6">
+
+            <!-- AQUÍ SE AGREGÓ EL LOGO PARA MÓVILES -->
+            <div class="lg:hidden flex items-center justify-center text-liverpool font-black text-3xl tracking-tighter mb-10">
+                <img th:src="@{/img/logo.png}" alt="Logo Liverpool" class="w-12 h-12 rounded-xl mr-3 shadow-sm object-cover bg-white">
+                LIVERPOOL
+            </div>
+
+            <div>
+                <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Iniciar Sesión</h2>
+                <p class="mt-2 text-sm text-slate-500 font-medium">Ingresa tus credenciales corporativas.</p>
+            </div>
+
+            <!-- Alerta de Error desde Java -->
+            <div th:if="${error}" class="mt-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-bold text-center">
+                <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span>
+            </div>
+
+            <div class="mt-8">
+                <!-- Formulario real hacia WebController -->
+                <form th:action="@{/login}" method="POST" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold leading-6 text-slate-700">Usuario / Candidato</label>
+                        <div class="mt-2 relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-regular fa-user text-slate-400"></i>
+                            </div>
+                            <input name="username" type="text" required placeholder="Ej. Carlos Mendoza o reclutador" class="block w-full rounded-xl border-0 py-3.5 pl-10 pr-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-liverpool sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold leading-6 text-slate-700">Contraseña</label>
+                        <div class="mt-2 relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-slate-400"></i>
+                            </div>
+                            <!-- Aquí se removió el value quemado que causaba el error -->
+                            <input name="password" type="password" required placeholder="••••••••" class="block w-full rounded-xl border-0 py-3.5 pl-10 pr-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-liverpool sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="flex w-full justify-center rounded-xl bg-liverpool px-3 py-3.5 text-sm font-bold text-white shadow-md hover:bg-liverpool-dark transition-all">
+                            Entrar al Sistema
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
