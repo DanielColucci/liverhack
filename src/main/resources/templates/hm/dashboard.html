@@ -6,35 +6,50 @@
     <title>Liverpool - Portal HM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { theme: { extend: { colors: { liverpool: { pink: '#E10098', purple: '#4A0050' } } } } }
+        tailwind.config = { theme: { extend: { colors: { liverpool: { pink: '#E10098', darkpink: '#C2007D', purple: '#4A0050', plum: '#670067' } } } } }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .cv-scroll::-webkit-scrollbar { width: 6px; }
-        .cv-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         .pulse-active { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse-ring { 0%, 100% { border-color: rgba(225, 0, 152, 0.7); box-shadow: 0 0 0 0 rgba(225, 0, 152, 0.4); } 50% { border-color: rgba(225, 0, 152, 1); box-shadow: 0 0 0 8px rgba(225, 0, 152, 0); } }
+        .cv-scroll::-webkit-scrollbar { width: 8px; }
+        .cv-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .cv-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .cv-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-24">
 
-<header class="bg-gradient-to-r from-liverpool-purple to-liverpool-pink text-white shadow-lg sticky top-0 z-40">
+<!-- Header -->
+<header class="bg-gradient-to-r from-liverpool-purple via-liverpool-plum to-liverpool-pink text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center space-x-3"><img th:src="@{/img/logo.png}" class="w-10 h-10 rounded-xl bg-white shadow-sm"><div><h1 class="text-base sm:text-lg font-bold">LIVERPOOL TALENTO</h1></div></div>
-        <div class="flex items-center gap-3"><div class="bg-black/20 px-3 py-1.5 rounded-xl"><span class="text-[11px] text-pink-200" th:text="${usuario.nombreCompleto}"></span> <span class="font-extrabold text-xs bg-white text-liverpool-purple px-2 py-0.5 rounded-md">HM</span></div><a th:href="@{/logout}" class="text-xs text-white hover:text-pink-200 transition"><i class="fa-solid fa-power-off"></i></a></div>
+        <div class="flex items-center space-x-3">
+            <img th:src="@{/img/logo.png}" class="w-10 h-10 rounded-xl bg-white shadow-sm">
+            <div><h1 class="text-base sm:text-lg font-bold">LIVERPOOL TALENTO</h1></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="bg-black/20 px-3 py-1.5 rounded-xl">
+                <span class="text-[11px] text-pink-200" th:text="${usuario.nombreCompleto}"></span>
+                <span class="font-extrabold text-xs bg-white text-liverpool-purple px-2 py-0.5 rounded-md">HM</span>
+            </div>
+            <a th:href="@{/logout}" class="text-xs text-white hover:text-pink-200 transition"><i class="fa-solid fa-power-off"></i> Salir</a>
+        </div>
     </div>
 
-    <!-- SUBNAVEGACIÓN POR PESTAÑAS -->
+    <!-- Subnavegacion por pestañas -->
     <div class="bg-black/10 border-t border-white/10">
-        <div class="max-w-7xl mx-auto px-4 flex gap-4 text-xs font-bold">
-            <button id="btn-tab-flujo" onclick="cambiarTab('flujo')" class="py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 transition">
+        <div class="max-w-7xl mx-auto px-4 flex gap-4 text-xs font-bold overflow-x-auto">
+            <button id="btn-tab-flujo" onclick="cambiarTab('flujo')" class="py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-diagram-project"></i> Flujo SLA Operativo
             </button>
-            <button id="btn-tab-comparativa" onclick="cambiarTab('comparativa')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 transition">
-                <i class="fa-solid fa-users-viewfinder"></i> Lista & Comparativa de Candidatos
+            <button id="btn-tab-comparativa" onclick="cambiarTab('comparativa')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-users-viewfinder"></i> Lista & Comparativa
+            </button>
+            <button id="btn-tab-global" onclick="cambiarTab('global')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-earth-americas"></i> Visor Global (Tiempo Real)
             </button>
         </div>
     </div>
@@ -42,21 +57,17 @@
 
 <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
 
-    <!-- CONTENEDOR PRINCIPAL DEL FLUJO -->
+    <!-- Pestaña 1: Flujo SLA Operativo -->
     <div id="sec-tab-flujo">
-        <!-- ================= TRACKER GLOBAL DINÁMICO ================= -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-6">
-            <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-bold uppercase tracking-wider">AVANCE GLOBAL DEL SLA</span>
-                    <span class="text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm" th:classappend="${faseGlobal == 7 ? 'bg-emerald-500' : 'bg-liverpool-pink'}" th:text="${faseGlobal == 2 ? '16% Concluido' : (faseGlobal == 3 ? '33% Concluido' : (faseGlobal == 4 ? '50% Concluido' : (faseGlobal == 5 ? '66% Concluido' : (faseGlobal == 6 ? '83% Concluido' : '100% Concluido'))))}"></span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <a th:href="@{/reset}" class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium hover:bg-slate-200 transition"><i class="fa-solid fa-rotate-left mr-1"></i> Reiniciar Todo</a>
-                </div>
+            <div class="flex justify-between items-center mb-5">
+                <span class="text-sm font-bold uppercase tracking-wider">AVANCE GLOBAL DEL SLA</span>
+                <span class="bg-liverpool-pink text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm" th:text="${faseGlobal == 2 ? '16% Concluido' : (faseGlobal == 3 ? '33% Concluido' : (faseGlobal == 4 ? '50% Concluido' : (faseGlobal == 5 ? '66% Concluido' : (faseGlobal == 6 ? '83% Concluido' : '100% Concluido'))))}"></span>
             </div>
 
-            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-6 border border-slate-200"><div class="bg-gradient-to-r from-liverpool-purple to-liverpool-pink h-full rounded-full transition-all duration-1000" th:style="'width: ' + (${faseGlobal == 2 ? 16 : (faseGlobal == 3 ? 33 : (faseGlobal == 4 ? 50 : (faseGlobal == 5 ? 66 : (faseGlobal == 6 ? 83 : 100))))}) + '%'" th:classappend="${faseGlobal == 7 ? 'from-emerald-400 to-emerald-600' : ''}"></div></div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-6 border border-slate-200">
+                <div class="bg-gradient-to-r from-liverpool-purple to-liverpool-pink h-full rounded-full transition-all duration-1000" th:style="'width: ' + (${faseGlobal == 2 ? 16 : (faseGlobal == 3 ? 33 : (faseGlobal == 4 ? 50 : (faseGlobal == 5 ? 66 : (faseGlobal == 6 ? 83 : 100))))}) + '%'"></div>
+            </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div class="p-3 rounded-xl border border-emerald-200 bg-emerald-50/40 text-emerald-800"><div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">01</span><span class="w-2 h-2 rounded-full bg-emerald-500"></span></div><p class="text-sm font-bold mt-1">Requisición</p></div>
@@ -68,92 +79,41 @@
             </div>
             <hr class="my-6 border-slate-100">
 
-            <!-- PANELES DE AVISO -->
-            <div th:if="${faseGlobal == 2 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-orange-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex justify-center items-center font-bold shadow-sm">02</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 02)</h4><span class="text-[11px] text-emerald-600">Valida los perfiles técnicos iniciales de los candidatos.</span></div></div>
-            <div th:if="${faseGlobal == 2 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-pink-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-liverpool-pink text-white flex justify-center items-center font-bold shadow-sm">02</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">Esperando que Atracción de Talento envíe lote de candidatos.</span></div></div>
+            <div th:if="${faseGlobal == 2 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-orange-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex justify-center items-center font-bold">02</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 02)</h4><span class="text-[11px] text-emerald-600">Valida los perfiles técnicos iniciales de los candidatos.</span></div></div>
+            <div th:if="${faseGlobal == 2 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-pink-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-liverpool-pink text-white flex justify-center items-center font-bold">02</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">Esperando que Atracción de Talento envíe lote de candidatos.</span></div></div>
 
-            <div th:if="${faseGlobal == 3 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-purple-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex justify-center items-center font-bold shadow-sm">03</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 03)</h4><span class="text-[11px] text-emerald-600">Revisa los Expedientes/CVs completos y confirma tu interés.</span></div></div>
-            <div th:if="${faseGlobal == 3 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-purple-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex justify-center items-center font-bold shadow-sm">03</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">AT está recolectando los CVs y realizando el primer contacto.</span></div></div>
+            <div th:if="${faseGlobal == 3 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-purple-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex justify-center items-center font-bold">03</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 03)</h4><span class="text-[11px] text-emerald-600">Revisa los Expedientes/CVs completos y confirma tu interés.</span></div></div>
+            <div th:if="${faseGlobal == 3 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-purple-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex justify-center items-center font-bold">03</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">AT está recolectando los CVs y realizando el primer contacto.</span></div></div>
 
-            <div th:if="${faseGlobal == 4 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-orange-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex justify-center items-center font-bold shadow-sm">04</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 04)</h4><span class="text-[11px] text-emerald-600">Revisa el Pool evaluado y define a los finalistas.</span></div></div>
-            <div th:if="${faseGlobal == 4 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-pink-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-liverpool-pink text-white flex justify-center items-center font-bold shadow-sm">04</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">AT está agendando, entrevistando y evaluando a los candidatos.</span></div></div>
+            <div th:if="${faseGlobal == 4 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-orange-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex justify-center items-center font-bold">04</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 04)</h4><span class="text-[11px] text-emerald-600">Revisa el Pool evaluado y define a los finalistas.</span></div></div>
+            <div th:if="${faseGlobal == 4 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-pink-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-liverpool-pink text-white flex justify-center items-center font-bold">04</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">AT está agendando, entrevistando y evaluando a los candidatos.</span></div></div>
 
-            <div th:if="${faseGlobal == 5 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-orange-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex justify-center items-center font-bold shadow-sm">05</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 05)</h4><span class="text-[11px] text-emerald-600">Entrevista al candidato y selecciona al finalista (o descarta).</span></div></div>
-            <div th:if="${faseGlobal == 5 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-purple-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex justify-center items-center font-bold shadow-sm">05</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">AT está agendando la entrevista final.</span></div></div>
+            <div th:if="${faseGlobal == 5 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-orange-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex justify-center items-center font-bold">05</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 05)</h4><span class="text-[11px] text-emerald-600">Entrevista al candidato y selecciona al finalista (o descarta).</span></div></div>
+            <div th:if="${faseGlobal == 5 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-purple-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex justify-center items-center font-bold">05</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de AT</h4><span class="text-[11px] text-slate-400">AT está agendando la entrevista final.</span></div></div>
         </div>
 
-        <!-- ================= FASE 2: VISTA HM (CUADROS / TARJETAS DETALLADAS AL SELECCIONAR) ================= -->
+        <!-- Fases de Trabajo (HM) -->
         <div th:if="${faseGlobal == 2 and turnoActivo == 'HM'}">
-            <h3 class="text-lg font-bold mb-2 text-slate-800"><i class="fa-solid fa-clipboard-check text-orange-500 mr-2"></i>Validación Técnica Rápida (Fase 2)</h3>
-            <p class="text-sm text-slate-500 mb-4">Haz clic sobre un candidato para desplegar y validar sus requisitos técnicos y no negociables.</p>
-
-            <!-- Grid de Tarjetas Compactas que despliegan su Modal Detallado -->
+            <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-clipboard-check text-orange-500 mr-2"></i>Validación Técnica Rápida (Fase 2)</h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 <div th:each="candidato : ${candidatosHM}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 cursor-pointer text-center group hover:border-orange-400 transition-all hover:shadow-md" th:data-id="${candidato.id}" onclick="abrirModalHM(this.getAttribute('data-id'))">
                     <div class="w-14 h-14 bg-orange-50 text-orange-500 rounded-full flex justify-center items-center text-2xl mx-auto mb-3 group-hover:bg-orange-100 transition"><i class="fa-solid fa-user-check"></i></div>
-                    <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4>
-                    <p class="text-[10px] text-slate-500 line-clamp-2" th:text="${candidato.puestoActual}"></p>
+                    <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4><p class="text-[10px] text-slate-500 line-clamp-2" th:text="${candidato.puestoActual}"></p>
                 </div>
             </div>
 
-            <!-- Modales Desplegables con Aspectos Completos (No Negociables, Estudios, Habilidades y Competencias) -->
             <div th:each="candidato : ${candidatosHM}" th:id="'modalDetalleHM-' + ${candidato.id}" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                 <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl modal-enter overflow-hidden">
-                    <div class="bg-orange-500 p-5 text-white flex justify-between items-center">
-                        <div>
-                            <h3 class="text-xl font-bold" th:text="${candidato.nombre}"></h3>
-                            <p class="text-xs text-orange-100" th:text="${candidato.puestoActual}"></p>
-                        </div>
-                        <button type="button" th:data-id="${candidato.id}" onclick="cerrarModalHM(this.getAttribute('data-id'))" class="text-white w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-
-                    <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto cv-scroll">
-                        <!-- Cuadros detallados idénticos a los de AT pero adaptados para HM -->
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-                            <strong class="text-slate-700 block text-xs font-bold uppercase tracking-wider border-b pb-2"><i class="fa-solid fa-microchip mr-1 text-orange-500"></i> Evaluación de Requisitos Fase 2</strong>
-
-                            <div>
-                                <span class="font-bold text-[10px] uppercase text-slate-400 block mb-0.5">No Negociables</span>
-                                <p class="text-xs text-slate-700 bg-white p-2.5 rounded-xl border border-slate-100">Expectativa salarial, disponibilidad y modalidad de trabajo validadas.</p>
-                            </div>
-
-                            <div>
-                                <span class="font-bold text-[10px] uppercase text-slate-400 block mb-0.5">Estudios / Formación</span>
-                                <p class="text-xs text-slate-900 bg-white p-2.5 rounded-xl border border-slate-100 font-semibold" th:text="${candidato.escolaridad}"></p>
-                            </div>
-
-                            <div>
-                                <span class="font-bold text-[10px] uppercase text-slate-400 block mb-0.5">Habilidades Técnicas</span>
-                                <p class="text-xs text-slate-900 bg-white p-2.5 rounded-xl border border-slate-100" th:text="${candidato.fortalezas}"></p>
-                            </div>
-
-                            <div>
-                                <span class="font-bold text-[10px] uppercase text-slate-400 block mb-0.5">Competencias Clave</span>
-                                <p class="text-xs text-slate-700 bg-white p-2.5 rounded-xl border border-slate-100">Liderazgo, enfoque a resultados y adaptabilidad.</p>
-                            </div>
-                        </div>
-
-                        <!-- Botones de Acción -->
-                        <div class="flex gap-3 pt-2">
-                            <form th:action="@{/hm/evaluar/{id}(id=${candidato.id})}" method="post" class="flex-1">
-                                <input type="hidden" name="decision" value="Aprobado">
-                                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md transition text-xs"><i class="fa-solid fa-check mr-1"></i> Aprobar a Fase 3</button>
-                            </form>
-                            <button type="button" th:data-id="${candidato.id}" onclick="mostrarFormRechazoHM(this.getAttribute('data-id'))" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-50 transition text-xs">Rechazar</button>
-                        </div>
-
-                        <!-- Formulario de Rechazo Oculto -->
-                        <form th:id="'form-rechazo-hm-' + ${candidato.id}" class="hidden pt-3 border-t border-slate-100" th:action="@{/hm/evaluar/{id}(id=${candidato.id})}" method="post">
-                            <input type="hidden" name="decision" value="Rechazado">
-                            <textarea name="justificacion" required rows="2" class="w-full border border-slate-300 p-3 rounded-xl text-xs mb-3 focus:ring-orange-400" placeholder="Escribe el feedback o motivo del rechazo técnico..."></textarea>
-                            <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl transition text-xs">Confirmar Rechazo</button>
-                        </form>
+                    <div class="bg-orange-500 p-5 text-white flex justify-between items-center"><div><h3 class="text-xl font-bold" th:text="${candidato.nombre}"></h3></div><button type="button" th:data-id="${candidato.id}" onclick="cerrarModalHM(this.getAttribute('data-id'))" class="text-white w-8 h-8 rounded-full bg-white/20 hover:bg-white/40"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="p-6">
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-6 shadow-inner"><strong class="text-slate-700 block mb-4 text-sm font-bold uppercase"><i class="fa-solid fa-microchip mr-1"></i> Perfil Técnico Inicial</strong><div class="space-y-4 text-sm text-slate-700"><div><span class="font-bold text-xs uppercase text-slate-400 block mb-1">Estudios</span><strong class="text-slate-900" th:text="${candidato.escolaridad}"></strong></div><div><span class="font-bold text-xs uppercase text-slate-400 block mb-1">Habilidades</span><strong class="text-slate-900" th:text="${candidato.fortalezas}"></strong></div></div></div>
+                        <div class="flex gap-3"><form th:action="@{/hm/evaluar/{id}(id=${candidato.id})}" method="post" class="flex-1"><input type="hidden" name="decision" value="Aprobado"><button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md transition">Aprobar a Fase 3</button></form><button type="button" th:data-id="${candidato.id}" onclick="mostrarFormRechazoHM(this.getAttribute('data-id'))" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-50 transition">Rechazar</button></div>
+                        <form th:id="'form-rechazo-hm-' + ${candidato.id}" class="hidden mt-4 pt-4 border-t border-slate-100" th:action="@{/hm/evaluar/{id}(id=${candidato.id})}" method="post"><input type="hidden" name="decision" value="Rechazado"><textarea name="justificacion" required rows="2" class="w-full border border-slate-300 p-3 rounded-xl text-sm mb-3 focus:ring-orange-400" placeholder="Feedback técnico..."></textarea><button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition">Confirmar Rechazo</button></form>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ================= FASE 3: VISTA HM ================= -->
         <div th:if="${faseGlobal == 3 and turnoActivo == 'HM'}">
             <h3 class="text-lg font-bold mb-2 text-slate-800"><i class="fa-solid fa-file-pdf text-purple-600 mr-2"></i>Revisión de Expedientes (Fase 3)</h3>
 
@@ -194,7 +154,6 @@
             </div>
         </div>
 
-        <!-- ================= FASE 4: VISTA HM ================= -->
         <div th:if="${faseGlobal == 4 and turnoActivo == 'HM'}">
             <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-ranking-star text-orange-500 mr-2"></i>Fase 4: Pool de Candidatos Evaluados</h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -229,7 +188,6 @@
             </div>
         </div>
 
-        <!-- ================= FASE 5: VISTA HM ================= -->
         <div th:if="${faseGlobal == 5 and turnoActivo == 'HM'}">
             <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-star text-orange-500 mr-2"></i>Fase 5: Selección del Finalista</h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -256,7 +214,6 @@
             </div>
         </div>
 
-        <!-- ================= 100% COMPLETADO (FASE 7) ================= -->
         <div th:if="${faseGlobal == 7}">
             <div class="bg-emerald-50 border border-emerald-200 p-10 rounded-3xl text-center shadow-sm relative overflow-hidden">
                 <div class="absolute -top-10 -right-10 text-emerald-100 opacity-50 text-[200px]"><i class="fa-solid fa-award"></i></div>
@@ -264,7 +221,6 @@
                     <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fa-solid fa-check-double"></i></div>
                     <h3 class="text-3xl font-extrabold text-emerald-800 mb-2">¡Proceso 100% Concluido!</h3>
                     <p class="text-emerald-600 font-medium mb-8">La contratación se ha cerrado exitosamente. El candidato ya forma parte de Liverpool.</p>
-                    <a th:href="@{/reset}" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-md transition"><i class="fa-solid fa-rotate-left mr-2"></i> Iniciar Nuevo Proceso</a>
                 </div>
             </div>
 
@@ -279,13 +235,32 @@
                 </div>
             </div>
         </div>
-    </div> <!-- FIN DE LA PESTAÑA FLUJO -->
 
-    <!-- ================= PESTAÑA 2: LISTA & COMPARATIVA ================= -->
+        <!-- Panel de Notificación y Escalación (Turno de AT/HRBP) -->
+        <div th:if="${turnoActivo == 'AT' or turnoActivo == 'HRBP'}" class="mt-12 bg-rose-50/50 p-6 rounded-3xl border border-rose-200 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-rose-800 mb-1">
+                        <i class="fa-solid fa-clock mr-2"></i>Seguimiento: Esperando a <span th:text="${turnoActivo}"></span>
+                    </h3>
+                    <p class="text-sm text-rose-600">El sistema detecta que <span th:text="${turnoActivo}"></span> tiene el turno activo en el flujo. Envía una notificación general para alertarlos de un posible retraso.</p>
+                </div>
+                <!-- Botón de alerta general de HM hacia AT/HRBP -->
+                <form th:action="@{/hm/alertar-retraso-general}" method="post" class="shrink-0">
+                    <!-- Si agregas este mapping al backend en WebController.java, asegúrate de llamarlo "/hm/alertar-retraso-general" -->
+                    <button type="submit" onclick="alert('Se ha enviado la alerta general.');" class="bg-rose-200 hover:bg-rose-300 text-rose-900 font-bold py-3 px-6 rounded-xl transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-bell-ringing"></i> Notificar a <span th:text="${turnoActivo}"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pestaña 2: Lista y comparativa -->
     <div id="sec-tab-comparativa" class="hidden space-y-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <!-- LADO IZQUIERDO: TABLA COMPARATIVA -->
+            <!-- Lado izquierdo: Tabla comparativa -->
             <div class="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-x-auto">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -311,15 +286,16 @@
                     <tbody class="divide-y divide-slate-200">
                     <tr><td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Estatus Actual</td><td class="p-3 text-center border-r border-slate-200"><span id="t-status-1" class="bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold text-[10px] uppercase"></span></td><td class="p-3 text-center"><span id="t-status-2" class="bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold text-[10px] uppercase"></span></td></tr>
                     <tr><td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Escolaridad</td><td id="t-esc-1" class="p-3 text-center border-r border-slate-200 text-slate-700"></td><td id="t-esc-2" class="p-3 text-center text-slate-700"></td></tr>
-                    <tr><td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Fortalezas / Habilidades</td><td id="t-fort-1" class="p-3 text-center border-r border-slate-200 text-slate-700"></td><td id="t-fort-2" class="p-3 text-center text-slate-700"></td></tr>
-                    <tr class="bg-orange-50/40"><td class="p-3 font-bold text-orange-700 border-r border-slate-200">Score Psicométrico <br><span class="text-[9px] font-normal text-slate-500">(Capturado por AT en F4)</span></td><td id="t-score-1" class="p-3 text-center font-extrabold text-orange-600 border-r border-slate-200 text-lg"></td><td id="t-score-2" class="p-3 text-center font-extrabold text-orange-600 text-lg"></td></tr>
-                    <tr><td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Notas AT <br><span class="text-[9px] font-normal text-slate-500">(Capturado en F4)</span></td><td id="t-notas-1" class="p-3 text-center border-r border-slate-200 text-slate-600 italic"></td><td id="t-notas-2" class="p-3 text-center text-slate-600 italic"></td></tr>
+                    <tr><td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Idiomas</td><td id="t-idiomas-1" class="p-3 text-center border-r border-slate-200 text-slate-700 font-medium"></td><td id="t-idiomas-2" class="p-3 text-center text-slate-700 font-medium"></td></tr>
+                    <tr><td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Fortalezas Identificadas</td><td id="t-fort-1" class="p-3 text-center border-r border-slate-200 text-slate-700"></td><td id="t-fort-2" class="p-3 text-center text-slate-700"></td></tr>
+                    <tr class="bg-orange-50/40"><td class="p-3 font-bold text-orange-700 border-r border-slate-200">Score Psicométrico <br><span class="text-[9px] font-normal text-slate-500">(Capturado en Fase 4)</span></td><td id="t-score-1" class="p-3 text-center font-extrabold text-orange-600 border-r border-slate-200 text-lg"></td><td id="t-score-2" class="p-3 text-center font-extrabold text-orange-600 text-lg"></td></tr>
+                    <tr><td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Notas de Entrevista <br><span class="text-[9px] font-normal text-slate-500">(Capturado en Fase 4)</span></td><td id="t-notas-1" class="p-3 text-center border-r border-slate-200 text-slate-600 italic"></td><td id="t-notas-2" class="p-3 text-center text-slate-600 italic"></td></tr>
                     <tr class="bg-purple-50/30"><td class="p-3 font-bold text-purple-900 border-r border-slate-200">Dictamen AT</td><td id="t-rec-1" class="p-3 text-center font-bold border-r border-slate-200"></td><td id="t-rec-2" class="p-3 text-center font-bold"></td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- LADO DERECHO: VISOR CV EXPANDIDO CON SCROLL -->
+            <!-- Lado derecho: Visor CV completo -->
             <div class="space-y-6">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
@@ -327,104 +303,118 @@
                         <select id="select-candidato-visor" onchange="actualizarVisorCV(this.value)" class="border border-slate-300 p-1.5 rounded-lg text-[10px] font-bold bg-slate-50 focus:ring-orange-500 cursor-pointer"></select>
                     </div>
 
-                    <div class="border border-slate-200 rounded-2xl bg-slate-100 p-4 relative overflow-hidden shadow-inner flex-1 h-[500px]">
+                    <div class="border border-slate-200 rounded-2xl bg-slate-100 p-4 relative overflow-hidden shadow-inner flex-1 h-[550px]">
                         <div class="bg-white p-6 rounded-xl shadow border border-slate-200 text-left space-y-5 overflow-y-auto h-full cv-scroll">
 
                             <div class="border-b border-slate-100 pb-4">
-                                <h5 id="pdf-nombre" class="font-extrabold text-xl text-slate-900 leading-tight"></h5>
+                                <h5 id="pdf-nombre" class="font-extrabold text-2xl text-slate-900 leading-tight"></h5>
                                 <p id="pdf-puesto" class="text-sm text-orange-600 font-bold mt-1"></p>
                                 <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-building mr-1"></i> <strong class="text-slate-700">Empresa actual:</strong> <span id="pdf-empresa"></span></p>
                             </div>
 
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Estatus</span>
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Estatus Actual</span>
                                     <span id="pdf-status" class="bg-liverpool-purple text-white text-[11px] font-bold px-3 py-1 rounded"></span>
                                 </div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Justificación / Notas:</span>
+                                <p id="pdf-justificacion" class="text-xs text-slate-600 italic leading-relaxed"></p>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3 text-xs">
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center shadow-sm">
-                                    <span class="text-slate-400 block font-bold text-[9px] uppercase mb-1">Comp. Actual</span>
+                                    <span class="text-slate-400 block font-bold text-[9px] uppercase mb-1">Compensación Actual</span>
                                     <span id="pdf-actual" class="text-slate-800 font-bold text-sm"></span>
                                 </div>
                                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-center shadow-sm">
-                                    <span class="text-emerald-600 block font-bold text-[9px] uppercase mb-1">Comp. Deseada</span>
+                                    <span class="text-emerald-600 block font-bold text-[9px] uppercase mb-1">Compensación Deseada</span>
                                     <span id="pdf-deseado" class="text-emerald-700 font-bold text-sm"></span>
                                 </div>
                             </div>
 
                             <div>
-                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Contacto</h6>
-                                <p class="text-xs text-slate-600 mb-1.5"><i class="fa-solid fa-envelope w-4 text-slate-400"></i> <span id="pdf-correo"></span></p>
-                                <p class="text-xs text-slate-600"><i class="fa-solid fa-phone w-4 text-slate-400"></i> <span id="pdf-telefono"></span></p>
+                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Datos de Contacto</h6>
+                                <p class="text-xs text-slate-600 mb-1.5"><i class="fa-solid fa-envelope w-4 text-slate-400"></i> <strong class="text-slate-700 mr-1">Correo:</strong> <span id="pdf-correo"></span></p>
+                                <p class="text-xs text-slate-600"><i class="fa-solid fa-phone w-4 text-slate-400"></i> <strong class="text-slate-700 mr-1">Teléfono:</strong> <span id="pdf-telefono"></span></p>
                             </div>
 
                             <div>
-                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Perfil</h6>
+                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Perfil Profesional</h6>
                                 <ul class="space-y-2 text-xs text-slate-600">
                                     <li><strong class="text-slate-700">Escolaridad:</strong> <span id="pdf-esc"></span></li>
+                                    <li><strong class="text-slate-700">Idiomas:</strong> <span id="pdf-idiomas"></span></li>
+                                    <li class="bg-orange-50 p-2 rounded border border-orange-100 mt-2"><strong class="text-orange-700">Compatibilidad Global:</strong> <span id="pdf-compatibilidad" class="font-bold text-orange-600 text-sm ml-1"></span></li>
                                 </ul>
                             </div>
 
                             <div>
-                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Habilidades</h6>
+                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Habilidades y Fortalezas</h6>
                                 <p id="pdf-fort" class="text-xs text-slate-600 leading-relaxed"></p>
                             </div>
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div> <!-- FIN PESTAÑA COMPARATIVA -->
+    </div>
+
+    <!-- Pestaña 3: Visor Global (JS DINÁMICO) -->
+    <div id="sec-tab-global" class="hidden space-y-6">
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-earth-americas text-blue-500 mr-2"></i>Radar Global de Candidatos</h3>
+                    <p class="text-xs text-slate-500">Vista unificada de todos los perfiles en el sistema, generada automáticamente.</p>
+                </div>
+                <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Tracker Activo
+                </span>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="p-4">Candidato</th>
+                        <th class="p-4">Puesto Actual</th>
+                        <th class="p-4">Estatus del Proceso</th>
+                        <th class="p-4 text-center">Fase Estimada</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tabla-global-body" class="divide-y divide-slate-100">
+                    <!-- SE LLENA POR JAVASCRIPT -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
 </main>
 
-<!-- SCRIPTS DE NAVEGACIÓN, MODALES Y COMPARATIVA -->
 <script th:inline="javascript">
-    /* ================= LOGICA DE PESTAÑAS ================= */
-    function cambiarTab(tab) {
-        if(tab === 'flujo') {
-            document.getElementById('sec-tab-flujo').classList.remove('hidden');
-            document.getElementById('sec-tab-comparativa').classList.add('hidden');
-            document.getElementById('btn-tab-flujo').className = "py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 transition";
-            document.getElementById('btn-tab-comparativa').className = "py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 transition";
-        } else {
-            document.getElementById('sec-tab-flujo').classList.add('hidden');
-            document.getElementById('sec-tab-comparativa').classList.remove('hidden');
-            document.getElementById('btn-tab-flujo').className = "py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 transition";
-            document.getElementById('btn-tab-comparativa').className = "py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 transition";
-        }
-    }
-
-    /* ================= LOGICA DE MODALES (FASE 2, 3, 4, 5) ================= */
-    function abrirModalHM(id) { document.getElementById('modalDetalleHM-' + id).classList.remove('hidden'); }
-    function cerrarModalHM(id) { document.getElementById('modalDetalleHM-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-hm-'+id); if(f) f.classList.add('hidden'); }
-    function mostrarFormRechazoHM(id) { document.getElementById('form-rechazo-hm-' + id).classList.remove('hidden'); }
-
-    function abrirModalCV(id) { document.getElementById('modalCV-' + id).classList.remove('hidden'); }
-    function cerrarModalCV(id) { document.getElementById('modalCV-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-cv-'+id); if(f) f.classList.add('hidden'); }
-    function mostrarFormRechazoCV(id) { document.getElementById('form-rechazo-cv-' + id).classList.remove('hidden'); }
-
-    function abrirModalDecisionHM(id) { document.getElementById('modalDecisionHM-' + id).classList.remove('hidden'); }
-    function cerrarModalDecisionHM(id) { document.getElementById('modalDecisionHM-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-hm4-'+id); if(f) f.classList.add('hidden'); }
-    function mostrarFormRechazoHM4(id) { document.getElementById('form-rechazo-hm4-' + id).classList.remove('hidden'); }
-
-    function abrirModalDecisionHM5(id) { document.getElementById('modalDecisionHM5-' + id).classList.remove('hidden'); }
-    function cerrarModalDecisionHM5(id) { document.getElementById('modalDecisionHM5-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-hm5-'+id); if(f) f.classList.add('hidden'); }
-    function mostrarFormRechazoHM5(id) { document.getElementById('form-rechazo-hm5-' + id).classList.remove('hidden'); }
-
-    /* ================= LOGICA DE COMPARATIVA ================= */
     /*<![CDATA[*/
+    var cAT = /*[[${candidatosAT}]]*/ [];
     var cHM = /*[[${candidatosHM}]]*/ [];
     var cF3 = /*[[${candidatosFase3}]]*/ [];
     var cF4 = /*[[${candidatosFase4}]]*/ [];
     var cF5 = /*[[${candidatosFase5}]]*/ [];
+    var cF6 = /*[[${candidatosFase6}]]*/ [];
     var cCont = /*[[${contratados}]]*/ [];
 
-    var todosRaw = [].concat(cHM||[], cF3||[], cF4||[], cF5||[], cCont||[]);
+    // Al igual que en AT, tomamos la lista global enviada desde el backend
+    var todosGlobales = /*[[${todosLosCandidatos}]]*/ [];
+
+    // Si la lista global por alguna razón llega vacía, hacemos un fallback concatenando las listas locales
+    if (!todosGlobales || todosGlobales.length === 0) {
+        todosGlobales = [].concat(cAT||[], cHM||[], cF3||[], cF4||[], cF5||[], cF6||[], cCont||[]);
+    }
+
+    // Eliminamos duplicados y preparamos la lista maestra
     var map = new Map();
-    todosRaw.forEach(c => { if(c && c.id) map.set(c.id, c); });
+    todosGlobales.forEach(c => {
+        if(c && c.id) map.set(c.id, c);
+    });
     var todosUnicos = Array.from(map.values());
 
     function getPhaseScore(status) {
@@ -434,7 +424,7 @@
         if(s.includes("FIRMADA") || s.includes("OFERTA")) return 60;
         if(s.includes("HM CONFIRMADA") || s.includes("SELECCION") || s.includes("FINALISTA")) return 50;
         if(s.includes("ENTREVISTA CONFIRMADA") || s.includes("POOL") || s.includes("ATRACCION")) return 40;
-        if(s.includes("CONTACTADO") || s.includes("EXPEDIENTE") || s.includes("APROBADO")) return 30;
+        if(s.includes("CONTACTADO") || s.includes("EXPEDIENTE") || s.includes("APROBADO") || s.includes("VALIDACION HM")) return 30;
         return 10;
     }
 
@@ -461,8 +451,11 @@
 
             if(candidatosVivos.length > 0) {
                 select1.value = candidatosVivos[0].id;
-                if(candidatosVivos.length > 1) { select2.value = candidatosVivos[1].id; }
-                else { select2.value = candidatosVivos[0].id; }
+                if(candidatosVivos.length > 1) {
+                    select2.value = candidatosVivos[1].id;
+                } else {
+                    select2.value = candidatosVivos[0].id;
+                }
                 selectVisor.value = candidatosVivos[0].id;
 
                 actualizarTabla();
@@ -474,6 +467,7 @@
     function actualizarTabla() {
         const id1 = document.getElementById('comp-candidato-1').value;
         const id2 = document.getElementById('comp-candidato-2').value;
+
         const c1 = todosUnicos.find(c => c.id == id1) || {};
         const c2 = todosUnicos.find(c => c.id == id2) || {};
 
@@ -483,8 +477,11 @@
         document.getElementById('t-status-2').innerText = c2.statusProceso || '-';
         document.getElementById('t-esc-1').innerText = c1.escolaridad || '-';
         document.getElementById('t-esc-2').innerText = c2.escolaridad || '-';
+        document.getElementById('t-idiomas-1').innerText = c1.idiomas || '-';
+        document.getElementById('t-idiomas-2').innerText = c2.idiomas || '-';
         document.getElementById('t-fort-1').innerText = c1.fortalezas || '-';
         document.getElementById('t-fort-2').innerText = c2.fortalezas || '-';
+
         document.getElementById('t-score-1').innerHTML = c1.scorePsicometrico ? c1.scorePsicometrico + '<span class="text-xs text-slate-400">/100</span>' : pendienteBage;
         document.getElementById('t-score-2').innerHTML = c2.scorePsicometrico ? c2.scorePsicometrico + '<span class="text-xs text-slate-400">/100</span>' : pendienteBage;
         document.getElementById('t-notas-1').innerHTML = c1.notasEntrevista ? '"' + c1.notasEntrevista + '"' : pendienteBage;
@@ -494,12 +491,14 @@
             if(!rec) return pendienteBage;
             return rec === 'Recomendado' ? `<span class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> ${rec}</span>` : `<span class="text-rose-600"><i class="fa-solid fa-circle-xmark"></i> ${rec}</span>`;
         };
+
         document.getElementById('t-rec-1').innerHTML = pintarRec(c1.recomendacionAT);
         document.getElementById('t-rec-2').innerHTML = pintarRec(c2.recomendacionAT);
     }
 
     function actualizarVisorCV(id) {
         const c = todosUnicos.find(c => c.id == id) || {};
+
         document.getElementById('pdf-nombre').innerText = c.nombre || 'No disponible';
         document.getElementById('pdf-correo').innerText = c.correo || 'No disponible';
         document.getElementById('pdf-telefono').innerText = c.telefono || 'No disponible';
@@ -508,9 +507,111 @@
         document.getElementById('pdf-actual').innerText = formatSueldo(c.compensacionActual);
         document.getElementById('pdf-deseado').innerText = formatSueldo(c.compensacionDeseada);
         document.getElementById('pdf-esc').innerText = c.escolaridad || 'No disponible';
+        document.getElementById('pdf-idiomas').innerText = c.idiomas || 'No disponible';
+        document.getElementById('pdf-compatibilidad').innerText = c.compatibilidad ? c.compatibilidad + '%' : 'No evaluada';
         document.getElementById('pdf-fort').innerText = c.fortalezas || 'No disponible';
         document.getElementById('pdf-status').innerText = c.statusProceso || 'Sin Estatus';
+
+        const justificacionText = c.statusJustificacion || c.justificacionRechazo || c.notasEntrevista || 'Sin observaciones adicionales registradas en el sistema.';
+        document.getElementById('pdf-justificacion').innerText = justificacionText;
     }
+
+    // === FUNCIONES PESTAÑAS Y VISOR GLOBAL ===
+    function renderizarTablaGlobal() {
+        const tbody = document.getElementById('tabla-global-body');
+        if(!tbody) return;
+
+        tbody.innerHTML = '';
+
+        if(candidatosVivos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400 text-xs">No hay candidatos registrados en la requisición.</td></tr>';
+            return;
+        }
+
+        candidatosVivos.forEach(c => {
+            let statusUpper = (c.statusProceso || '').toUpperCase();
+            let faseBadge = '<span class="bg-slate-100 text-slate-500 text-xs font-bold px-3 py-1 rounded-full">En Proceso</span>';
+
+            if(statusUpper.includes('CONTRATADO') || statusUpper.includes('FIRMADA')) {
+                faseBadge = '<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-check-double mr-1"></i> Contratado</span>';
+            } else if(statusUpper.includes('OFERTA') || statusUpper.includes('AUTORIZACION')) {
+                faseBadge = '<span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-file-signature mr-1"></i> Oferta / HRBP</span>';
+            } else if(statusUpper.includes('HM') || statusUpper.includes('FINALISTA')) {
+                faseBadge = '<span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-user-tie mr-1"></i> En HM</span>';
+            } else {
+                faseBadge = '<span class="bg-pink-100 text-liverpool-pink text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-headset mr-1"></i> En AT</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-50 transition';
+            tr.innerHTML = `
+                <td class="p-4">
+                    <div class="font-bold text-slate-800">${c.nombre || 'Desconocido'}</div>
+                    <div class="text-[10px] text-slate-400">${c.correo || 'Sin correo'}</div>
+                </td>
+                <td class="p-4 text-slate-600 text-xs font-medium">${c.puestoActual || '-'}</td>
+                <td class="p-4">
+                    <span class="bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">${c.statusProceso || 'SIN ESTATUS'}</span>
+                </td>
+                <td class="p-4 text-center">
+                    ${faseBadge}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function cambiarTab(tab) {
+        const secFlujo = document.getElementById('sec-tab-flujo');
+        const secComp = document.getElementById('sec-tab-comparativa');
+        const secGlobal = document.getElementById('sec-tab-global');
+
+        const btnFlujo = document.getElementById('btn-tab-flujo');
+        const btnComp = document.getElementById('btn-tab-comparativa');
+        const btnGlobal = document.getElementById('btn-tab-global');
+
+        // Ocultar todo
+        if(secFlujo) secFlujo.classList.add('hidden');
+        if(secComp) secComp.classList.add('hidden');
+        if(secGlobal) secGlobal.classList.add('hidden');
+
+        // Resetear botones
+        const baseClass = "py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap";
+        if(btnFlujo) btnFlujo.className = baseClass;
+        if(btnComp) btnComp.className = baseClass;
+        if(btnGlobal) btnGlobal.className = baseClass;
+
+        // Mostrar seleccionado
+        const activeClass = "py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 whitespace-nowrap";
+        if(tab === 'flujo') {
+            if(secFlujo) secFlujo.classList.remove('hidden');
+            if(btnFlujo) btnFlujo.className = activeClass;
+        } else if(tab === 'comparativa') {
+            if(secComp) secComp.classList.remove('hidden');
+            if(btnComp) btnComp.className = activeClass;
+        } else if(tab === 'global') {
+            if(secGlobal) secGlobal.classList.remove('hidden');
+            if(btnGlobal) btnGlobal.className = activeClass;
+            renderizarTablaGlobal();
+        }
+    }
+
+    // === FUNCIONES DE MODALES Y LÓGICA HM ===
+    function abrirModalHM(id) { document.getElementById('modalDetalleHM-' + id).classList.remove('hidden'); }
+    function cerrarModalHM(id) { document.getElementById('modalDetalleHM-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-hm-'+id); if(f) f.classList.add('hidden'); }
+    function mostrarFormRechazoHM(id) { document.getElementById('form-rechazo-hm-' + id).classList.remove('hidden'); }
+
+    function abrirModalCV(id) { document.getElementById('modalCV-' + id).classList.remove('hidden'); }
+    function cerrarModalCV(id) { document.getElementById('modalCV-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-cv-'+id); if(f) f.classList.add('hidden'); }
+    function mostrarFormRechazoCV(id) { document.getElementById('form-rechazo-cv-' + id).classList.remove('hidden'); }
+
+    function abrirModalDecisionHM(id) { document.getElementById('modalDecisionHM-' + id).classList.remove('hidden'); }
+    function cerrarModalDecisionHM(id) { document.getElementById('modalDecisionHM-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-hm4-'+id); if(f) f.classList.add('hidden'); }
+    function mostrarFormRechazoHM4(id) { document.getElementById('form-rechazo-hm4-' + id).classList.remove('hidden'); }
+
+    function abrirModalDecisionHM5(id) { document.getElementById('modalDecisionHM5-' + id).classList.remove('hidden'); }
+    function cerrarModalDecisionHM5(id) { document.getElementById('modalDecisionHM5-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-hm5-'+id); if(f) f.classList.add('hidden'); }
+    function mostrarFormRechazoHM5(id) { document.getElementById('form-rechazo-hm5-' + id).classList.remove('hidden'); }
 </script>
 </body>
 </html>

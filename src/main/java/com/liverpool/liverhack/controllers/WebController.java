@@ -25,9 +25,6 @@ public class WebController {
     @Autowired
     private EmailService emailService;
 
-    // ==========================================
-    // RUTAS DE ACCESO (LOGIN / LOGOUT)
-    // ==========================================
     @GetMapping("/")
     public String index() {
         return "redirect:/login";
@@ -48,7 +45,6 @@ public class WebController {
 
         if (user != null) {
 
-            // Si es candidato, verificamos estrictamente que exista su expediente antes de dejarlo pasar
             if ("CANDIDATO".equals(user.getRol())) {
                 Candidato candidato = candidatoRepo.findByNombre(user.getNombreCompleto());
 
@@ -57,13 +53,11 @@ public class WebController {
                     session.setAttribute("candidatoId", candidato.getId());
                     return "redirect:/dashboard";
                 } else {
-                    // Si no hay expediente, lo regresamos al login con un mensaje claro
                     model.addAttribute("error", "Error de sistema: No se encontró el expediente de candidato para '" + user.getNombreCompleto() + "'.");
                     return "login";
                 }
             }
 
-            // Si es AT, HM o HRBP, pasa directo
             session.setAttribute("usuarioLogueado", user);
             return "redirect:/dashboard";
         }
@@ -78,9 +72,6 @@ public class WebController {
         return "redirect:/login";
     }
 
-    // ==========================================
-    // DASHBOARD PRINCIPAL Y ENRUTADOR
-    // ==========================================
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -117,9 +108,10 @@ public class WebController {
 
         List<Candidato> listaContratados = candidatoRepo.findByStatusProceso("Contratado");
 
-        // ==========================================
-        // LA MAGIA DEL TRACKER 100%
-        // ==========================================
+        // Agregar la lista completa para el "Visor Global"
+        List<Candidato> todosLosCandidatos = candidatoRepo.findAll();
+        model.addAttribute("todosLosCandidatos", todosLosCandidatos);
+
         int faseGlobal = 1; String turnoActivo = "";
 
         if (!listaAT.isEmpty() || !listaHM.isEmpty()) { faseGlobal = 2; turnoActivo = (!listaAT.isEmpty()) ? "AT" : "HM"; }
@@ -127,7 +119,7 @@ public class WebController {
         else if (!listaFase4AT.isEmpty() || !listaFase4HM.isEmpty()) { faseGlobal = 4; turnoActivo = (!listaFase4AT.isEmpty()) ? "AT" : "HM"; }
         else if (!listaFase5AT.isEmpty() || !listaFase5HM.isEmpty()) { faseGlobal = 5; turnoActivo = (!listaFase5AT.isEmpty()) ? "AT" : "HM"; }
         else if (!listaFase6HRBP.isEmpty() || !listaFase6AT.isEmpty()) { faseGlobal = 6; turnoActivo = (!listaFase6HRBP.isEmpty()) ? "HRBP" : "AT"; }
-        else if (!listaContratados.isEmpty()) { faseGlobal = 7; turnoActivo = "COMPLETADO"; } // FASE 7 (100%)
+        else if (!listaContratados.isEmpty()) { faseGlobal = 7; turnoActivo = "COMPLETADO"; }
 
         model.addAttribute("faseGlobal", faseGlobal);
         model.addAttribute("turnoActivo", turnoActivo);
@@ -139,6 +131,14 @@ public class WebController {
             model.addAttribute("candidatosFase5", listaFase5AT);
             model.addAttribute("candidatosFase6", listaFase6AT);
             model.addAttribute("contratados", listaContratados);
+
+            List<Candidato> enEsperaHM = new ArrayList<>();
+            enEsperaHM.addAll(listaHM);
+            enEsperaHM.addAll(listaFase3HM);
+            enEsperaHM.addAll(listaFase4HM);
+            enEsperaHM.addAll(listaFase5HM);
+            model.addAttribute("enEsperaHM", enEsperaHM);
+
             return "at/dashboard";
         } else if (usuario.getRol().equals("HM")) {
             model.addAttribute("candidatosHM", listaHM);
@@ -148,7 +148,6 @@ public class WebController {
             model.addAttribute("contratados", listaContratados);
             return "hm/dashboard";
         } else if (usuario.getRol().equals("HRBP")) {
-            // UNIFICAMOS LISTAS PARA LA VISTA ESPÍA DEL HRBP
             List<Candidato> fase2 = new ArrayList<>(listaAT); fase2.addAll(listaHM);
             List<Candidato> fase3 = new ArrayList<>(listaFase3AT); fase3.addAll(listaFase3HM);
             List<Candidato> fase4 = new ArrayList<>(listaFase4AT); fase4.addAll(listaFase4HM);
@@ -191,12 +190,16 @@ public class WebController {
         model.addAttribute("descartado", descartado);
     }
 
-    // ==========================================
-    // ENDPOINTS DE TRANSICIÓN (FASES 2 A 5)
-    // ==========================================
     @PostMapping("/at/evaluar-lote")
     public String evaluarLoteAT(@RequestParam(value = "candidatoIds", required = false) List<Long> ids) {
-        if (ids != null) { List<Candidato> cands = candidatoRepo.findAllById(ids); for (Candidato c : cands) c.setStatusProceso("Validacion HM"); candidatoRepo.saveAll(cands); }
+        if (ids != null) {
+            List<Candidato> cands = candidatoRepo.findAllById(ids);
+            for (Candidato c : cands) c.setStatusProceso("Validacion HM");
+            candidatoRepo.saveAll(cands);
+
+            String correoHM = obtenerCorreoRol("HM");
+            if(correoHM != null) emailService.enviarAvisoAHM(correoHM, cands.size());
+        }
         return "redirect:/dashboard";
     }
 
@@ -209,7 +212,12 @@ public class WebController {
     public String evaluarHM(@PathVariable Long id, @RequestParam String decision, @RequestParam(required = false) String justificacion) {
         Candidato c = candidatoRepo.findById(id).orElseThrow();
         if ("Aprobado".equals(decision)) c.setStatusProceso("En Busqueda"); else { c.setStatusProceso("Descartado por HM (Fase 2)"); c.setStatusJustificacion(justificacion); }
-        candidatoRepo.save(c); return "redirect:/dashboard";
+        candidatoRepo.save(c);
+
+        String correoAT = obtenerCorreoRol("AT");
+        if(correoAT != null) emailService.enviarAvisoAAT(correoAT, c.getNombre(), "Fase 2");
+
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/at/fase3-avanzar/{id}")
@@ -221,7 +229,12 @@ public class WebController {
     public String evaluarFase3HM(@PathVariable Long id, @RequestParam String decision, @RequestParam(required = false) String justificacion) {
         Candidato c = candidatoRepo.findById(id).orElseThrow();
         if ("Aprobado".equals(decision)) c.setStatusProceso("En Atraccion"); else { c.setStatusProceso("Descartado por HM (Fase 3)"); c.setStatusJustificacion(justificacion); }
-        candidatoRepo.save(c); return "redirect:/dashboard";
+        candidatoRepo.save(c);
+
+        String correoAT = obtenerCorreoRol("AT");
+        if(correoAT != null) emailService.enviarAvisoAAT(correoAT, c.getNombre(), "Fase 3");
+
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/at/fase4-agendar/{id}")
@@ -245,7 +258,12 @@ public class WebController {
     public String decidirFase4HM(@PathVariable Long id, @RequestParam String decision, @RequestParam(required = false) String justificacion) {
         Candidato c = candidatoRepo.findById(id).orElseThrow();
         if ("Aprobado".equals(decision)) c.setStatusProceso("En Seleccion"); else { c.setStatusProceso("Descartado por HM (Fase 4)"); c.setStatusJustificacion(justificacion); }
-        candidatoRepo.save(c); return "redirect:/dashboard";
+        candidatoRepo.save(c);
+
+        String correoAT = obtenerCorreoRol("AT");
+        if(correoAT != null) emailService.enviarAvisoAAT(correoAT, c.getNombre(), "Fase 4");
+
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/at/fase5-agendar/{id}")
@@ -264,12 +282,14 @@ public class WebController {
     public String decidirFase5HM(@PathVariable Long id, @RequestParam String decision, @RequestParam(required = false) String justificacion) {
         Candidato c = candidatoRepo.findById(id).orElseThrow();
         if ("Finalista".equals(decision)) c.setStatusProceso("En Oferta"); else { c.setStatusProceso("Descartado por HM (Fase 5)"); c.setStatusJustificacion(justificacion); }
-        candidatoRepo.save(c); return "redirect:/dashboard";
+        candidatoRepo.save(c);
+
+        String correoAT = obtenerCorreoRol("AT");
+        if(correoAT != null) emailService.enviarAvisoAAT(correoAT, c.getNombre(), "Fase 5 (Selección de Finalista)");
+
+        return "redirect:/dashboard";
     }
 
-    // ==========================================
-    // ENDPOINTS DE LA FASE 6 (NUEVOS)
-    // ==========================================
     @PostMapping("/hrbp/fase6-solicitar/{id}")
     public String hrbpSolicitarOferta(@PathVariable Long id) {
         Candidato c = candidatoRepo.findById(id).orElseThrow();
@@ -306,6 +326,73 @@ public class WebController {
     }
 
     // ==========================================
+    // ALERTAS DE ESCALACIÓN (BOTONES MANUALES)
+    // ==========================================
+
+    // AT alerta a HM
+    @PostMapping("/at/alertar-hm-general")
+    public String alertaGeneralHM() {
+        String correoHM = obtenerCorreoRol("HM");
+        String correoHRBP = obtenerCorreoRol("HRBP");
+
+        if (correoHM != null && correoHRBP != null) {
+            emailService.alertaRetrasoHM(correoHM, correoHRBP, "Múltiples candidatos en espera (Notificación General de AT)");
+        }
+        return "redirect:/dashboard";
+    }
+
+    // HM alerta a AT
+    @PostMapping("/hm/alertar-retraso-general")
+    public String alertaGeneralAT() {
+        String correoAT = obtenerCorreoRol("AT");
+        String correoHRBP = obtenerCorreoRol("HRBP");
+        if (correoAT != null && correoHRBP != null) {
+            emailService.alertaRetrasoAT(correoAT, correoHRBP, "Múltiples candidatos en espera (Notificación General de HM)");
+        }
+        return "redirect:/dashboard";
+    }
+
+    // HRBP alerta dinámicamente a AT o HM dependiendo del turno activo
+    @PostMapping("/hrbp/alertar-retraso-general")
+    public String hrbpAlertaGeneral(@RequestParam String areaRetraso) {
+        String correoHRBP = obtenerCorreoRol("HRBP");
+
+        if ("AT".equals(areaRetraso)) {
+            String correoAT = obtenerCorreoRol("AT");
+            if (correoAT != null) {
+                emailService.alertaRetrasoAT(correoAT, correoHRBP, "Seguimiento crítico de SLA por parte de HRBP");
+            }
+        } else if ("HM".equals(areaRetraso)) {
+            String correoHM = obtenerCorreoRol("HM");
+            if (correoHM != null) {
+                emailService.alertaRetrasoHM(correoHM, correoHRBP, "Seguimiento crítico de SLA por parte de HRBP");
+            }
+        }
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/at/alertar-retraso-hm/{id}")
+    public String atAlertaHM(@PathVariable Long id) {
+        Candidato c = candidatoRepo.findById(id).orElseThrow();
+        emailService.alertaRetrasoHM(obtenerCorreoRol("HM"), obtenerCorreoRol("HRBP"), c.getNombre());
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/hm/alertar-retraso-at/{id}")
+    public String hmAlertaAT(@PathVariable Long id) {
+        Candidato c = candidatoRepo.findById(id).orElseThrow();
+        emailService.alertaRetrasoAT(obtenerCorreoRol("AT"), obtenerCorreoRol("HRBP"), c.getNombre());
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/hrbp/alertar-retraso-at/{id}")
+    public String hrbpAlertaAT(@PathVariable Long id) {
+        Candidato c = candidatoRepo.findById(id).orElseThrow();
+        emailService.alertaRetrasoAT_DesdeHRBP(obtenerCorreoRol("AT"), c.getNombre());
+        return "redirect:/dashboard";
+    }
+
+    // ==========================================
     // HERRAMIENTA DE REINICIO
     // ==========================================
     @GetMapping("/reset")
@@ -324,5 +411,11 @@ public class WebController {
         return "redirect:/dashboard";
     }
 
-
+    private String obtenerCorreoRol(String rol) {
+        List<Usuario> usuarios = (List<Usuario>) usuarioRepo.findAll();
+        for (Usuario u : usuarios) {
+            if (rol.equals(u.getRol()) && u.getCorreo() != null) return u.getCorreo();
+        }
+        return null;
+    }
 }

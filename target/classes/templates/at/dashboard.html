@@ -15,7 +15,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .pulse-active { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse-ring { 0%, 100% { border-color: rgba(225, 0, 152, 0.7); box-shadow: 0 0 0 0 rgba(225, 0, 152, 0.4); } 50% { border-color: rgba(225, 0, 152, 1); box-shadow: 0 0 0 8px rgba(225, 0, 152, 0); } }
-        /* Scrollbar elegante para el visor de CV */
         .cv-scroll::-webkit-scrollbar { width: 8px; }
         .cv-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
         .cv-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
@@ -24,7 +23,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-24">
 
-<!-- HEADER -->
+<!-- Header -->
 <header class="bg-gradient-to-r from-liverpool-purple via-liverpool-plum to-liverpool-pink text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div class="flex items-center space-x-3">
@@ -40,14 +39,17 @@
         </div>
     </div>
 
-    <!-- SUBNAVEGACIÓN POR PESTAÑAS -->
+    <!-- Subnavegacion por pestañas -->
     <div class="bg-black/10 border-t border-white/10">
-        <div class="max-w-7xl mx-auto px-4 flex gap-4 text-xs font-bold">
-            <button id="btn-tab-flujo" onclick="cambiarTab('flujo')" class="py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2">
+        <div class="max-w-7xl mx-auto px-4 flex gap-4 text-xs font-bold overflow-x-auto">
+            <button id="btn-tab-flujo" onclick="cambiarTab('flujo')" class="py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-diagram-project"></i> Flujo SLA Operativo
             </button>
-            <button id="btn-tab-comparativa" onclick="cambiarTab('comparativa')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2">
-                <i class="fa-solid fa-users-viewfinder"></i> Lista & Comparativa de Candidatos
+            <button id="btn-tab-comparativa" onclick="cambiarTab('comparativa')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-users-viewfinder"></i> Lista & Comparativa
+            </button>
+            <button id="btn-tab-global" onclick="cambiarTab('global')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-earth-americas"></i> Visor Global (Tiempo Real)
             </button>
         </div>
     </div>
@@ -55,9 +57,9 @@
 
 <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
 
-    <!-- ================= PESTAÑA 1: FLUJO SLA OPERATIVO ================= -->
+    <!-- Pestaña 1: Flujo SLA Operativo -->
     <div id="sec-tab-flujo">
-        <!-- TRACKER GLOBAL -->
+        <!-- Tracker Global -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-6">
             <div class="flex justify-between items-center mb-5">
                 <span class="text-sm font-bold uppercase tracking-wider">AVANCE GLOBAL DEL SLA</span>
@@ -78,7 +80,7 @@
             </div>
             <hr class="my-6 border-slate-100">
 
-            <!-- PANELES DE AVISO -->
+            <!-- Paneles de Aviso -->
             <div th:if="${faseGlobal == 2 and turnoActivo == 'AT'}" class="p-4 rounded-2xl border border-pink-200 bg-emerald-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-liverpool-pink text-white flex justify-center items-center font-bold">02</div><div><h4 class="text-sm font-bold text-emerald-800">Tu turno activo (Fase 02)</h4><span class="text-[11px] text-emerald-600">Evalúa los filtros no negociables y arma tu lote.</span></div></div>
             <div th:if="${faseGlobal == 2 and turnoActivo == 'HM'}" class="p-4 rounded-2xl border border-orange-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex justify-center items-center font-bold">02</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de HM</h4><span class="text-[11px] text-slate-400">Esperando validación técnica inicial del gerente.</span></div></div>
 
@@ -95,7 +97,7 @@
             <div th:if="${faseGlobal == 6 and turnoActivo == 'HRBP'}" class="p-4 rounded-2xl border border-purple-200 bg-slate-50 flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex justify-center items-center font-bold">06</div><div><h4 class="text-sm font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i> Exclusivo de HRBP</h4><span class="text-[11px] text-slate-400">Esperando que el HRBP autorice la carta oferta.</span></div></div>
         </div>
 
-        <!-- ================= FASES DE TRABAJO (AT) ================= -->
+        <!-- Fases de Trabajo (AT) -->
         <div th:if="${faseGlobal == 2 and turnoActivo == 'AT'}">
             <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-users text-liverpool-pink mr-2"></i>Filtro: No Negociables</h3>
             <form id="form-lote-at" th:action="@{/at/evaluar-lote}" method="post">
@@ -149,13 +151,47 @@
             </div>
             <div th:each="candidato : ${candidatosFase6}" th:if="${candidato.statusProceso == 'Oferta Firmada'}"><div th:id="'modalIngreso-' + ${candidato.id}" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"><div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl modal-enter overflow-hidden"><div class="bg-emerald-500 p-5 text-white flex justify-between items-center"><div><h3 class="text-lg font-bold">Fecha de Ingreso</h3><p class="text-xs opacity-90" th:text="${candidato.nombre}"></p></div><button type="button" th:data-id="${candidato.id}" onclick="cerrarModalIngreso(this.getAttribute('data-id'))" class="text-white w-8 h-8 rounded-full bg-white/20 hover:bg-white/40"><i class="fa-solid fa-xmark"></i></button></div><div class="p-6"><form th:action="@{/at/fase6-confirmar-ingreso/{id}(id=${candidato.id})}" method="post"><label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Día de Ingreso Oficial</label><input type="date" name="fechaIngreso" required class="w-full border border-slate-300 p-3 rounded-xl text-sm mb-6 focus:ring-emerald-500 bg-white shadow-inner"><button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-flag-checkered"></i> Confirmar Contratación</button></form></div></div></div></div>
         </div>
+
+        <!-- Panel de Escalación y Notificación (Turno de HM) -->
+        <div th:if="${turnoActivo == 'HM' and not #lists.isEmpty(enEsperaHM)}" class="mt-12 bg-orange-50/50 p-6 rounded-3xl border border-orange-200 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-orange-800 mb-1">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i>Seguimiento: Candidatos esperando al HM
+                    </h3>
+                    <p class="text-sm text-orange-600">Has terminado tus tareas o el HM tiene el turno. Envía una notificación general para avisarle que el portal está listo para su revisión.</p>
+                </div>
+                <!-- BOTÓN GENERAL (Avisa del turno / Retraso) -->
+                <form th:action="@{/at/alertar-hm-general}" method="post" class="shrink-0">
+                    <button type="submit" onclick="alert('Se ha enviado la alerta general al correo del HM y HRBP');" class="bg-orange-200 hover:bg-orange-300 text-orange-900 font-bold py-3 px-6 rounded-xl transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-bell-ringing"></i> Notificar a HM (Alerta General)
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista de candidatos (Sin botones individuales) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div th:each="candidato : ${enEsperaHM}" class="bg-white border border-orange-200 border-l-4 border-l-orange-500 p-5 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="font-bold text-slate-800 text-sm" th:text="${candidato.nombre}"></h4>
+                        <span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                            <i class="fa-regular fa-clock"></i> Detenido
+                        </span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p class="text-xs text-slate-500">Atorado en: <span class="font-medium text-slate-700" th:text="${candidato.statusProceso}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- ================= PESTAÑA 2: LISTA & COMPARATIVA (CON VISOR 100% COMPLETO Y MÍNIMO 2 SELECTORES) ================= -->
+    <!-- Pestaña 2: Lista y comparativa -->
     <div id="sec-tab-comparativa" class="hidden space-y-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <!-- LADO IZQUIERDO: TABLA COMPARATIVA -->
+            <!-- Lado izquierdo: Tabla comparativa -->
             <div class="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-x-auto">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -190,7 +226,7 @@
                 </table>
             </div>
 
-            <!-- LADO DERECHO: VISOR CV COMPLETO, EXPANDIDO Y CON SCROLL -->
+            <!-- Lado derecho: Visor CV completo -->
             <div class="space-y-6">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
@@ -198,18 +234,18 @@
                         <select id="select-candidato-visor" onchange="actualizarVisorCV(this.value)" class="border border-slate-300 p-1.5 rounded-lg text-[10px] font-bold bg-slate-50 focus:ring-liverpool-pink cursor-pointer"></select>
                     </div>
 
-                    <!-- CAJA DEL VISOR CON SCROLL INTERNO -->
+                    <!-- Caja del visor -->
                     <div class="border border-slate-200 rounded-2xl bg-slate-100 p-4 relative overflow-hidden shadow-inner flex-1 h-[550px]">
                         <div class="bg-white p-6 rounded-xl shadow border border-slate-200 text-left space-y-5 overflow-y-auto h-full cv-scroll">
 
-                            <!-- 1. Encabezado (Nombre, Puesto, Empresa) -->
+                            <!-- Encabezado -->
                             <div class="border-b border-slate-100 pb-4">
                                 <h5 id="pdf-nombre" class="font-extrabold text-2xl text-slate-900 leading-tight"></h5>
                                 <p id="pdf-puesto" class="text-sm text-liverpool-pink font-bold mt-1"></p>
                                 <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-building mr-1"></i> <strong class="text-slate-700">Empresa actual:</strong> <span id="pdf-empresa"></span></p>
                             </div>
 
-                            <!-- 2. Estatus del Proceso y Justificación -->
+                            <!-- Estatus del proceso -->
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                 <div class="flex justify-between items-center mb-3">
                                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Estatus Actual</span>
@@ -219,7 +255,7 @@
                                 <p id="pdf-justificacion" class="text-xs text-slate-600 italic leading-relaxed"></p>
                             </div>
 
-                            <!-- 3. Compensación Actual y Deseada -->
+                            <!-- Compensación -->
                             <div class="grid grid-cols-2 gap-3 text-xs">
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center shadow-sm">
                                     <span class="text-slate-400 block font-bold text-[9px] uppercase mb-1">Compensación Actual</span>
@@ -231,14 +267,14 @@
                                 </div>
                             </div>
 
-                            <!-- 4. Datos de Contacto (Correo, Teléfono) -->
+                            <!-- Datos de contacto -->
                             <div>
                                 <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Datos de Contacto</h6>
                                 <p class="text-xs text-slate-600 mb-1.5"><i class="fa-solid fa-envelope w-4 text-slate-400"></i> <strong class="text-slate-700 mr-1">Correo:</strong> <span id="pdf-correo"></span></p>
                                 <p class="text-xs text-slate-600"><i class="fa-solid fa-phone w-4 text-slate-400"></i> <strong class="text-slate-700 mr-1">Teléfono:</strong> <span id="pdf-telefono"></span></p>
                             </div>
 
-                            <!-- 5. Perfil Profesional (Escolaridad, Idiomas, Compatibilidad) -->
+                            <!-- Perfil profesional -->
                             <div>
                                 <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Perfil Profesional</h6>
                                 <ul class="space-y-2 text-xs text-slate-600">
@@ -248,7 +284,7 @@
                                 </ul>
                             </div>
 
-                            <!-- 6. Habilidades y Fortalezas -->
+                            <!-- Habilidades y fortalezas -->
                             <div>
                                 <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Habilidades y Fortalezas</h6>
                                 <p id="pdf-fort" class="text-xs text-slate-600 leading-relaxed"></p>
@@ -257,6 +293,37 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pestaña 3: Visor Global (JS DINÁMICO) -->
+    <div id="sec-tab-global" class="hidden space-y-6">
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-earth-americas text-blue-500 mr-2"></i>Radar Global de Candidatos</h3>
+                    <p class="text-xs text-slate-500">Vista unificada de todos los perfiles en el sistema, generada automáticamente con los datos disponibles.</p>
+                </div>
+                <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Tracker Activo
+                </span>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="p-4">Candidato</th>
+                        <th class="p-4">Puesto Actual</th>
+                        <th class="p-4">Estatus del Proceso</th>
+                        <th class="p-4 text-center">Fase Estimada</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tabla-global-body" class="divide-y divide-slate-100">
+                    <!-- SE LLENA POR JAVASCRIPT -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -271,16 +338,17 @@
     var cF5 = /*[[${candidatosFase5}]]*/ [];
     var cF6 = /*[[${candidatosFase6}]]*/ [];
     var cCont = /*[[${contratados}]]*/ [];
+    var enEsperaHM = /*[[${enEsperaHM}]]*/ []; // Incluimos a los que esperan al HM
 
-    // 1. Unimos todos los candidatos del sistema para mapearlos sin duplicados
-    var todosRaw = [].concat(cAT||[], cF3||[], cF4||[], cF5||[], cF6||[], cCont||[]);
+    // Unimos todos los candidatos (Evitando duplicados con Map)
+    var todosRaw = [].concat(cAT||[], cF3||[], cF4||[], cF5||[], cF6||[], cCont||[], enEsperaHM||[]);
     var map = new Map();
     todosRaw.forEach(c => {
         if(c && c.id) map.set(c.id, c);
     });
     var todosUnicos = Array.from(map.values());
 
-    // 2. Función para saber quién llegó más lejos en el proceso (Puntaje)
+    // Funcion para el puntaje de orden
     function getPhaseScore(status) {
         if(!status) return 0;
         var s = status.toUpperCase();
@@ -288,17 +356,14 @@
         if(s.includes("FIRMADA") || s.includes("OFERTA")) return 60;
         if(s.includes("HM CONFIRMADA") || s.includes("SELECCION") || s.includes("FINALISTA")) return 50;
         if(s.includes("ENTREVISTA CONFIRMADA") || s.includes("POOL") || s.includes("ATRACCION")) return 40;
-        if(s.includes("CONTACTADO") || s.includes("EXPEDIENTE")) return 30;
+        if(s.includes("CONTACTADO") || s.includes("EXPEDIENTE") || s.includes("VALIDACION HM")) return 30;
         return 10;
     }
 
-    // Ordenamos a toda la base de datos: Los más avanzados arriba
     todosUnicos.sort((a, b) => getPhaseScore(b.statusProceso) - getPhaseScore(a.statusProceso));
 
-    // 3. NUEVA REGLA MATEMÁTICA: Garantizar 100% que los selectores SIEMPRE tengan opciones.
-    // Metemos a TODOS los candidatos únicos a los selectores, para que no falte nadie nunca.
+    // Garantizar opciones en selectores y tabla global
     var candidatosVivos = todosUnicos;
-
     /*]]>*/
 
     const formatSueldo = (num) => num ? '$' + num.toLocaleString('es-MX') : 'No especificado';
@@ -312,25 +377,20 @@
         if(select1 && select2 && selectVisor) {
             select1.innerHTML = ''; select2.innerHTML = ''; selectVisor.innerHTML = '';
 
-            // Llenar selectores con TODOS los candidatos disponibles en la Base de Datos
             candidatosVivos.forEach(c => {
                 select1.add(new Option(c.nombre, c.id));
                 select2.add(new Option(c.nombre, c.id));
                 selectVisor.add(new Option(c.nombre, c.id));
             });
 
-            // Si hay datos, auto-seleccionamos al #1 (ej. Contratado) y al #2 (ej. el que quedó en Fase 5) por defecto
             if(candidatosVivos.length > 0) {
-                select1.value = candidatosVivos[0].id; // El más avanzado (Ana López)
-
+                select1.value = candidatosVivos[0].id;
                 if(candidatosVivos.length > 1) {
-                    select2.value = candidatosVivos[1].id; // El segundo más avanzado (Carlos)
+                    select2.value = candidatosVivos[1].id;
                 } else {
-                    select2.value = candidatosVivos[0].id; // Por si de verdad la BD solo tiene 1 persona registrada en toda la historia
+                    select2.value = candidatosVivos[0].id;
                 }
-
                 selectVisor.value = candidatosVivos[0].id;
-
                 actualizarTabla();
                 actualizarVisorCV(selectVisor.value);
             }
@@ -372,7 +432,6 @@
     function actualizarVisorCV(id) {
         const c = todosUnicos.find(c => c.id == id) || {};
 
-        // Asignación estricta de todos los 13 campos requeridos
         document.getElementById('pdf-nombre').innerText = c.nombre || 'No disponible';
         document.getElementById('pdf-correo').innerText = c.correo || 'No disponible';
         document.getElementById('pdf-telefono').innerText = c.telefono || 'No disponible';
@@ -390,20 +449,87 @@
         document.getElementById('pdf-justificacion').innerText = justificacionText;
     }
 
-    // Funciones Pestañas y Modales
+    // === FUNCIONES PESTAÑAS (INCLUYENDO VISOR GLOBAL) ===
+    function renderizarTablaGlobal() {
+        const tbody = document.getElementById('tabla-global-body');
+        if(!tbody) return;
+
+        tbody.innerHTML = '';
+
+        if(candidatosVivos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400 text-xs">No hay candidatos en el radar.</td></tr>';
+            return;
+        }
+
+        candidatosVivos.forEach(c => {
+            let statusUpper = (c.statusProceso || '').toUpperCase();
+            let faseBadge = '<span class="bg-slate-100 text-slate-500 text-xs font-bold px-3 py-1 rounded-full">En Proceso</span>';
+
+            if(statusUpper.includes('CONTRATADO') || statusUpper.includes('FIRMADA')) {
+                faseBadge = '<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-check-double mr-1"></i> Contratado</span>';
+            } else if(statusUpper.includes('OFERTA') || statusUpper.includes('AUTORIZACION')) {
+                faseBadge = '<span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-file-signature mr-1"></i> Oferta / HRBP</span>';
+            } else if(statusUpper.includes('HM') || statusUpper.includes('FINALISTA')) {
+                faseBadge = '<span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-user-tie mr-1"></i> En HM</span>';
+            } else {
+                faseBadge = '<span class="bg-pink-100 text-liverpool-pink text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-headset mr-1"></i> En AT</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-50 transition';
+            tr.innerHTML = `
+                <td class="p-4">
+                    <div class="font-bold text-slate-800">${c.nombre || 'Desconocido'}</div>
+                    <div class="text-[10px] text-slate-400">${c.correo || 'Sin correo'}</div>
+                </td>
+                <td class="p-4 text-slate-600 text-xs font-medium">${c.puestoActual || '-'}</td>
+                <td class="p-4">
+                    <span class="bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">${c.statusProceso || 'SIN ESTATUS'}</span>
+                </td>
+                <td class="p-4 text-center">
+                    ${faseBadge}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
     function cambiarTab(tab) {
+        const secFlujo = document.getElementById('sec-tab-flujo');
+        const secComp = document.getElementById('sec-tab-comparativa');
+        const secGlobal = document.getElementById('sec-tab-global');
+
+        const btnFlujo = document.getElementById('btn-tab-flujo');
+        const btnComp = document.getElementById('btn-tab-comparativa');
+        const btnGlobal = document.getElementById('btn-tab-global');
+
+        // Ocultar todo
+        if(secFlujo) secFlujo.classList.add('hidden');
+        if(secComp) secComp.classList.add('hidden');
+        if(secGlobal) secGlobal.classList.add('hidden');
+
+        // Resetear botones
+        const baseClass = "py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap";
+        if(btnFlujo) btnFlujo.className = baseClass;
+        if(btnComp) btnComp.className = baseClass;
+        if(btnGlobal) btnGlobal.className = baseClass;
+
+        // Mostrar seleccionado
+        const activeClass = "py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 whitespace-nowrap";
         if(tab === 'flujo') {
-            document.getElementById('sec-tab-flujo').classList.remove('hidden');
-            document.getElementById('sec-tab-comparativa').classList.add('hidden');
-            document.getElementById('btn-tab-flujo').className = "py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2";
-            document.getElementById('btn-tab-comparativa').className = "py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2";
-        } else {
-            document.getElementById('sec-tab-flujo').classList.add('hidden');
-            document.getElementById('sec-tab-comparativa').classList.remove('hidden');
-            document.getElementById('btn-tab-flujo').className = "py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2";
-            document.getElementById('btn-tab-comparativa').className = "py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2";
+            if(secFlujo) secFlujo.classList.remove('hidden');
+            if(btnFlujo) btnFlujo.className = activeClass;
+        } else if(tab === 'comparativa') {
+            if(secComp) secComp.classList.remove('hidden');
+            if(btnComp) btnComp.className = activeClass;
+        } else if(tab === 'global') {
+            if(secGlobal) secGlobal.classList.remove('hidden');
+            if(btnGlobal) btnGlobal.className = activeClass;
+            renderizarTablaGlobal();
         }
     }
+
+    // === FUNCIONES DE MODALES Y LÓGICA AT ===
     function abrirModalDetalle(id) { document.getElementById('modalDetalle-' + id).classList.remove('hidden'); }
     function cerrarModalDetalle(id) { document.getElementById('modalDetalle-' + id).classList.add('hidden'); const f = document.getElementById('form-rechazo-at-'+id); if(f) f.classList.add('hidden'); }
     function mostrarFormRechazoAT(id) { document.getElementById('form-rechazo-at-' + id).classList.remove('hidden'); }

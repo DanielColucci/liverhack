@@ -10,14 +10,26 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 <header class="bg-gradient-to-r from-liverpool-purple to-liverpool-pink text-white shadow-lg sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center"><div class="flex items-center space-x-3"><img th:src="@{/img/logo.png}" class="w-10 h-10 rounded-xl bg-white"><div><h1 class="text-base font-bold">LIVERPOOL TALENTO</h1></div></div><div class="flex items-center gap-3"><div class="bg-black/20 px-3 py-1.5 rounded-xl"><span class="text-[11px] text-pink-200" th:text="${usuario.nombreCompleto}"></span> <span class="font-extrabold text-xs bg-white text-liverpool-purple px-2 py-0.5 rounded-md" th:text="${usuario.rol}"></span></div><a th:href="@{/logout}" class="text-xs text-white"><i class="fa-solid fa-power-off"></i></a></div></div>
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <img th:src="@{/img/logo.png}" class="w-10 h-10 rounded-xl bg-white">
+            <div><h1 class="text-base font-bold">LIVERPOOL TALENTO</h1></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="bg-black/20 px-3 py-1.5 rounded-xl">
+                <span class="text-[11px] text-pink-200" th:text="${usuario.nombreCompleto}"></span>
+                <span class="font-extrabold text-xs bg-white text-liverpool-purple px-2 py-0.5 rounded-md" th:text="${usuario.rol}"></span>
+            </div>
+            <a th:href="@{/logout}" class="text-xs text-white"><i class="fa-solid fa-power-off"></i></a>
+        </div>
+    </div>
 </header>
 
 <main class="max-w-3xl mx-auto px-4 py-8 flex-1 w-full space-y-6">
     <div th:if="${!descartado}" class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
         <h2 class="text-2xl font-bold mb-4" th:text="'¡Hola, ' + ${miPerfil.nombre} + '!'"></h2>
 
-        <!-- BARRA DE PROGRESO -->
+        <!-- Barra de progreso -->
         <div class="space-y-4">
             <div class="flex justify-between items-center text-xs font-bold">
                 <span class="uppercase">Avance de tu proceso</span>
@@ -28,19 +40,19 @@
             </div>
         </div>
 
-        <!-- ================= ALERTA FASE 4: AGENDADA (AT) ================= -->
+        <!-- Alerta Fase 4: Agendada (AT) -->
         <div th:if="${miPerfil.statusProceso == 'Entrevista Agendada'}" class="bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl p-8 shadow-lg text-white mt-8">
             <div class="flex items-center gap-4 mb-4"><div class="w-14 h-14 bg-white/20 rounded-full flex justify-center items-center text-2xl"><i class="fa-solid fa-calendar-check"></i></div><div><h3 class="text-2xl font-bold">¡Avanzaste de Fase!</h3><p class="opacity-90">Tu perfil fue seleccionado para entrevista de talento.</p></div></div>
             <div class="bg-white/10 p-5 rounded-2xl border border-white/20 mb-6"><span class="block text-xs font-bold uppercase opacity-80 mb-1">Fecha y Hora Programada</span><strong class="text-xl" th:text="${#strings.replace(miPerfil.fechaEntrevista, 'T', ' a las ')}"></strong></div>
             <form th:action="@{/candidato/confirmar-entrevista/{id}(id=${miPerfil.id})}" method="post"><button type="submit" class="w-full bg-white text-purple-700 hover:bg-slate-100 font-bold py-4 rounded-xl shadow-lg transition text-lg"><i class="fa-solid fa-check-double mr-2"></i> Confirmar Asistencia</button></form>
         </div>
 
-        <!-- ================= ALERTA FASE 4: CONFIRMADA (AT) ================= -->
+        <!-- Alerta Fase 4: Confirmada (AT) -->
         <div th:if="${miPerfil.statusProceso == 'Entrevista Confirmada'}" class="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 text-emerald-800 mt-8 flex items-center gap-4">
             <i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><h4 class="font-bold">Asistencia Confirmada</h4><p class="text-sm">Te esperamos el día y hora acordada para tu entrevista.</p></div>
         </div>
 
-        <!-- ================= ALERTA FASE 5: AGENDADA (HM) ================= -->
+        <!-- Alerta Fase 5: Agendada (HM) -->
         <div th:if="${miPerfil.statusProceso == 'Entrevista HM Agendada'}" class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 shadow-lg text-white mt-8">
             <div class="flex items-center gap-4 mb-4"><div class="w-14 h-14 bg-white/20 rounded-full flex justify-center items-center text-2xl"><i class="fa-solid fa-user-tie"></i></div><div><h3 class="text-2xl font-bold">¡Estás en la etapa final!</h3><p class="opacity-90">Se ha agendado tu entrevista con el Hiring Manager.</p></div></div>
             <div class="bg-white/10 p-5 rounded-2xl border border-white/20 mb-6"><span class="block text-xs font-bold uppercase opacity-80 mb-1">Fecha y Hora Programada</span><strong class="text-xl" th:text="${#strings.replace(miPerfil.fechaEntrevista, 'T', ' a las ')}"></strong></div>
@@ -49,23 +61,24 @@
             </form>
         </div>
 
-        <!-- ================= ALERTA FASE 5: CONFIRMADA (HM) ================= -->
+        <!-- Alerta Fase 5: Confirmada (HM) -->
         <div th:if="${miPerfil.statusProceso == 'Entrevista HM Confirmada'}" class="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 text-emerald-800 mt-8 flex items-center gap-4">
             <i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><h4 class="font-bold">Asistencia Confirmada (Hiring Manager)</h4><p class="text-sm">Te esperamos el día y hora acordada para tu entrevista final.</p></div>
         </div>
 
-        <!-- ================= ALERTA FASE 6: OFERTA (SI EL HM LO SELECCIONA FINALISTA) ================= -->
+        <!-- Alerta Fase 6: Seleccionado para Oferta -->
         <div th:if="${miPerfil.statusProceso == 'En Oferta'}" class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-8 shadow-lg text-white mt-8">
             <div class="flex items-center gap-4"><div class="w-14 h-14 bg-white/20 rounded-full flex justify-center items-center text-2xl"><i class="fa-solid fa-trophy"></i></div><div><h3 class="text-2xl font-bold">¡Felicidades!</h3><p class="opacity-90">Has sido seleccionado. Muy pronto Atracción de Talento se comunicará contigo para la Oferta.</p></div></div>
         </div>
 
     </div>
+
     <div th:if="${descartado}" class="bg-white rounded-3xl p-8 shadow-sm border border-rose-200 border-l-4 border-l-rose-500">
         <h2 class="text-2xl font-bold mb-4 text-slate-800">Proceso Concluido</h2>
         <p class="text-sm text-slate-700 italic" th:text="${miPerfil.statusJustificacion}"></p>
     </div>
 
-    <!-- ================= ALERTA FASE 6: OFERTA ENVIADA (PARA FIRMAR) ================= -->
+    <!-- Alerta Fase 6: Oferta Enviada (Firma) -->
     <div th:if="${miPerfil.statusProceso == 'Oferta Enviada'}" class="bg-gradient-to-br from-liverpool-pink to-purple-600 rounded-3xl p-8 shadow-lg text-white mt-8">
         <div class="flex items-center gap-4 mb-4"><div class="w-14 h-14 bg-white/20 rounded-full flex justify-center items-center text-2xl"><i class="fa-solid fa-file-signature"></i></div><div><h3 class="text-2xl font-bold">¡Tu Carta Oferta está lista!</h3><p class="opacity-90">Revisa las condiciones y firma digitalmente para concluir tu proceso.</p></div></div>
         <form th:action="@{/candidato/fase6-firmar/{id}(id=${miPerfil.id})}" method="post">
@@ -73,7 +86,7 @@
         </form>
     </div>
 
-    <!-- ================= ALERTA FASE 6: CONTRATADO ================= -->
+    <!-- Alerta Fase 6: Contratado -->
     <div th:if="${miPerfil.statusProceso == 'Oferta Firmada' or miPerfil.statusProceso == 'Contratado'}" class="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 text-emerald-800 mt-8 flex flex-col sm:flex-row items-center gap-4">
         <div class="w-16 h-16 bg-emerald-100 rounded-full flex justify-center items-center text-3xl"><i class="fa-solid fa-party-horn text-emerald-500"></i></div>
         <div>

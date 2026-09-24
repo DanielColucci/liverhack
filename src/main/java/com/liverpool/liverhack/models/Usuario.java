@@ -13,11 +13,13 @@ public class Usuario {
     private String username;
     private String password;
     private String rol;
+    private String correo;
 
     @Column(name = "nombre_completo")
     private String nombreCompleto;
 
-    // --- GETTERS Y SETTERS ---
+    public Usuario() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -29,6 +31,9 @@ public class Usuario {
 
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
+
+    public String getCorreo() { return correo; }
+    public void setCorreo(String correo) { this.correo = correo; }
 
     public String getNombreCompleto() { return nombreCompleto; }
     public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }

@@ -6,118 +6,568 @@
     <title>Liverpool - Portal HRBP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { theme: { extend: { colors: { liverpool: { pink: '#E10098', purple: '#4A0050' } } } } }
+        tailwind.config = { theme: { extend: { colors: { liverpool: { pink: '#E10098', darkpink: '#C2007D', purple: '#4A0050', plum: '#670067' } } } } }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .pulse-active { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse-ring { 0%, 100% { border-color: rgba(225, 0, 152, 0.7); box-shadow: 0 0 0 0 rgba(225, 0, 152, 0.4); } 50% { border-color: rgba(225, 0, 152, 1); box-shadow: 0 0 0 8px rgba(225, 0, 152, 0); } }
+        @keyframes pulse-ring {
+            0%, 100% { border-color: rgba(225, 0, 152, 0.7); box-shadow: 0 0 0 0 rgba(225, 0, 152, 0.4); }
+            50% { border-color: rgba(225, 0, 152, 1); box-shadow: 0 0 0 8px rgba(225, 0, 152, 0); }
+        }
+        /* Scrollbar elegante para el visor de CV */
+        .cv-scroll::-webkit-scrollbar { width: 8px; }
+        .cv-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .cv-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .cv-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-24">
 
 <header class="bg-gradient-to-r from-liverpool-purple to-liverpool-pink text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center space-x-3"><img th:src="@{/img/logo.png}" class="w-10 h-10 rounded-xl bg-white shadow-sm"><div><h1 class="text-base sm:text-lg font-bold">LIVERPOOL TALENTO</h1></div></div>
-        <div class="flex items-center gap-3"><div class="bg-black/20 px-3 py-1.5 rounded-xl"><span class="text-[11px] text-pink-200" th:text="${usuario.nombreCompleto}"></span> <span class="font-extrabold text-xs bg-white text-liverpool-purple px-2 py-0.5 rounded-md">HRBP</span></div><a th:href="@{/logout}" class="text-xs text-white hover:text-pink-200 transition"><i class="fa-solid fa-power-off"></i></a></div>
+        <div class="flex items-center space-x-3">
+            <img th:src="@{/img/logo.png}" class="w-10 h-10 rounded-xl bg-white shadow-sm">
+            <div><h1 class="text-base sm:text-lg font-bold">LIVERPOOL TALENTO</h1></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="bg-black/20 px-3 py-1.5 rounded-xl">
+                <span class="text-[11px] text-pink-200" th:text="${usuario.nombreCompleto}"></span>
+                <span class="font-extrabold text-xs bg-white text-liverpool-purple px-2 py-0.5 rounded-md">HRBP</span>
+            </div>
+            <a th:href="@{/logout}" class="text-xs text-white hover:text-pink-200 transition"><i class="fa-solid fa-power-off"></i> Salir</a>
+        </div>
+    </div>
+
+    <!-- Subnavegación por pestañas -->
+    <div class="bg-black/10 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 flex gap-4 text-xs font-bold overflow-x-auto">
+            <button id="btn-tab-flujo" onclick="cambiarTab('flujo')" class="py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-diagram-project"></i> Flujo SLA Operativo
+            </button>
+            <button id="btn-tab-comparativa" onclick="cambiarTab('comparativa')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-users-viewfinder"></i> Lista & Comparativa
+            </button>
+            <button id="btn-tab-global" onclick="cambiarTab('global')" class="py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-earth-americas"></i> Visor Global (Tiempo Real)
+            </button>
+        </div>
     </div>
 </header>
 
 <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
 
-    <!-- ================= TRACKER GLOBAL DINÁMICO ================= -->
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-6">
-        <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
-            <div class="flex items-center gap-3">
-                <span class="text-sm font-bold uppercase tracking-wider">AVANCE GLOBAL DEL SLA</span>
-                <span class="text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm" th:classappend="${faseGlobal == 7 ? 'bg-emerald-500' : 'bg-liverpool-pink'}" th:text="${faseGlobal == 2 ? '16% Concluido' : (faseGlobal == 3 ? '33% Concluido' : (faseGlobal == 4 ? '50% Concluido' : (faseGlobal == 5 ? '66% Concluido' : (faseGlobal == 6 ? '83% Concluido' : '100% Concluido'))))}"></span>
+    <!-- Pestaña 1: Flujo SLA Operativo -->
+    <div id="sec-tab-flujo">
+        <!-- Tracker Global Dinámico -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-6">
+            <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold uppercase tracking-wider">AVANCE GLOBAL DEL SLA</span>
+                    <span class="text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm"
+                          th:classappend="${faseGlobal == 7 ? 'bg-emerald-500' : 'bg-liverpool-pink'}"
+                          th:text="${faseGlobal == 2 ? '16% Concluido' : (faseGlobal == 3 ? '33% Concluido' : (faseGlobal == 4 ? '50% Concluido' : (faseGlobal == 5 ? '66% Concluido' : (faseGlobal == 6 ? '83% Concluido' : '100% Concluido'))))}">
+                    </span>
+                </div>
+                <a th:href="@{/reset}" class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Reiniciar Demo
+                </a>
             </div>
-            <a th:href="@{/reset}" class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium hover:bg-slate-200 transition"><i class="fa-solid fa-rotate-left mr-1"></i> Reiniciar Demo</a>
-        </div>
 
-        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-6 border border-slate-200"><div class="bg-gradient-to-r from-liverpool-purple to-liverpool-pink h-full rounded-full transition-all duration-1000" th:style="'width: ' + (${faseGlobal == 2 ? 16 : (faseGlobal == 3 ? 33 : (faseGlobal == 4 ? 50 : (faseGlobal == 5 ? 66 : (faseGlobal == 6 ? 83 : 100))))}) + '%'" th:classappend="${faseGlobal == 7 ? 'from-emerald-400 to-emerald-600' : ''}"></div></div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-6 border border-slate-200">
+                <div class="bg-gradient-to-r from-liverpool-purple to-liverpool-pink h-full rounded-full transition-all duration-1000"
+                     th:style="'width: ' + (${faseGlobal == 2 ? 16 : (faseGlobal == 3 ? 33 : (faseGlobal == 4 ? 50 : (faseGlobal == 5 ? 66 : (faseGlobal == 6 ? 83 : 100))))}) + '%'"
+                     th:classappend="${faseGlobal == 7 ? 'from-emerald-400 to-emerald-600' : ''}">
+                </div>
+            </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div class="p-3 rounded-xl border border-emerald-200 bg-emerald-50/40 text-emerald-800"><div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">01</span><span class="w-2 h-2 rounded-full bg-emerald-500"></span></div><p class="text-sm font-bold mt-1">Requisición</p></div>
-            <div th:classappend="${faseGlobal == 2 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 2 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all"><div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">02</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 2 ? 'bg-liverpool-pink' : (faseGlobal > 2 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div><p class="text-sm font-bold mt-1">Alineación</p></div>
-            <div th:classappend="${faseGlobal == 3 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 3 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all"><div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">03</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 3 ? 'bg-liverpool-pink' : (faseGlobal > 3 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div><p class="text-sm font-bold mt-1">Búsqueda</p></div>
-            <div th:classappend="${faseGlobal == 4 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 4 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all"><div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">04</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 4 ? 'bg-liverpool-pink' : (faseGlobal > 4 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div><p class="text-sm font-bold mt-1">Atracción</p></div>
-            <div th:classappend="${faseGlobal == 5 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 5 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all"><div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">05</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 5 ? 'bg-liverpool-pink' : (faseGlobal > 5 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div><p class="text-sm font-bold mt-1">Selección</p></div>
-            <div th:classappend="${faseGlobal == 6 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal == 7 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all"><div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">06</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 6 ? 'bg-liverpool-pink' : (faseGlobal == 7 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div><p class="text-sm font-bold mt-1">Oferta</p></div>
-        </div>
-    </div>
-
-    <!-- ================= FASES 2 A 5 (MODO ESPIA / SOLO LECTURA) ================= -->
-    <div th:if="${faseGlobal >= 2 and faseGlobal <= 5}">
-        <h3 class="text-lg font-bold mb-2 text-slate-800"><i class="fa-solid fa-lock text-slate-400 mr-2"></i>Monitoreo (Fase <span th:text="${faseGlobal}"></span>)</h3>
-        <p class="text-sm text-slate-500 mb-6">Esta etapa está siendo gestionada por <span class="font-bold text-liverpool-pink" th:text="${turnoActivo}"></span>. Solo tienes acceso de visualización.</p>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <div th:each="candidato : ${faseGlobal == 2 ? candidatosFase2 : (faseGlobal == 3 ? candidatosFase3 : (faseGlobal == 4 ? candidatosFase4 : candidatosFase5))}" class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200 text-center opacity-80 cursor-not-allowed">
-                <div class="w-14 h-14 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-3"><i class="fa-solid fa-user-lock"></i></div>
-                <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4>
-                <p class="text-[10px] text-slate-500 line-clamp-1 mb-2" th:text="${candidato.puestoActual}"></p>
-                <span class="text-[9px] bg-slate-200 text-slate-600 font-bold px-2 py-1 rounded uppercase tracking-wider" th:text="${candidato.statusProceso}"></span>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div class="p-3 rounded-xl border border-emerald-200 bg-emerald-50/40 text-emerald-800">
+                    <div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">01</span><span class="w-2 h-2 rounded-full bg-emerald-500"></span></div>
+                    <p class="text-sm font-bold mt-1">Requisición</p>
+                </div>
+                <div th:classappend="${faseGlobal == 2 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 2 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all">
+                    <div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">02</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 2 ? 'bg-liverpool-pink' : (faseGlobal > 2 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div>
+                    <p class="text-sm font-bold mt-1">Alineación</p>
+                </div>
+                <div th:classappend="${faseGlobal == 3 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 3 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all">
+                    <div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">03</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 3 ? 'bg-liverpool-pink' : (faseGlobal > 3 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div>
+                    <p class="text-sm font-bold mt-1">Búsqueda</p>
+                </div>
+                <div th:classappend="${faseGlobal == 4 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 4 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all">
+                    <div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">04</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 4 ? 'bg-liverpool-pink' : (faseGlobal > 4 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div>
+                    <p class="text-sm font-bold mt-1">Atracción</p>
+                </div>
+                <div th:classappend="${faseGlobal == 5 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal > 5 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all">
+                    <div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">05</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 5 ? 'bg-liverpool-pink' : (faseGlobal > 5 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div>
+                    <p class="text-sm font-bold mt-1">Selección</p>
+                </div>
+                <div th:classappend="${faseGlobal == 6 ? 'border-liverpool-pink bg-pink-50 text-liverpool-darkpink pulse-active' : (faseGlobal == 7 ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')}" class="p-3 rounded-xl border transition-all">
+                    <div class="flex items-center justify-between"><span class="font-mono text-xs font-bold">06</span><span class="w-2 h-2 rounded-full" th:classappend="${faseGlobal == 6 ? 'bg-liverpool-pink' : (faseGlobal == 7 ? 'bg-emerald-500' : 'bg-slate-300')}"></span></div>
+                    <p class="text-sm font-bold mt-1">Oferta</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- ================= FASE 6 (ACCIÓN HRBP) ================= -->
-    <div th:if="${faseGlobal == 6}">
-        <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-stamp text-purple-600 mr-2"></i>Fase 6: Autorización de Oferta</h3>
+        <!-- Fases 2 a 5 (Modo Espía / Solo Lectura) -->
+        <div th:if="${faseGlobal >= 2 and faseGlobal <= 5}">
+            <h3 class="text-lg font-bold mb-2 text-slate-800"><i class="fa-solid fa-lock text-slate-400 mr-2"></i>Monitoreo (Fase <span th:text="${faseGlobal}"></span>)</h3>
+            <p class="text-sm text-slate-500 mb-6">Esta etapa está siendo gestionada por <span class="font-bold text-liverpool-pink" th:text="${turnoActivo}"></span>. Solo tienes acceso de visualización.</p>
 
-        <!-- Turno de Autorizar (HRBP) -->
-        <div th:unless="${#lists.isEmpty(candidatosFase6HRBP)}" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-            <div th:each="candidato : ${candidatosFase6HRBP}" class="bg-white p-5 rounded-2xl shadow-sm border border-purple-300 text-center relative group hover:shadow-md">
-                <div class="absolute top-0 right-0 left-0 bg-purple-100 text-purple-700 text-[9px] font-bold py-1.5 rounded-t-2xl uppercase tracking-wider"><i class="fa-solid fa-bell"></i> Requiere Autorización</div>
-                <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-3 mt-5 group-hover:bg-purple-100 transition"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4>
-                <div class="bg-emerald-50 text-emerald-700 text-xs font-bold py-1 px-2 rounded mb-4 mt-2">Sueldo: $<span th:text="${#numbers.formatDecimal(candidato.compensacionDeseada, 0, 'COMMA', 0, 'POINT')}"></span></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div th:each="candidato : ${faseGlobal == 2 ? candidatosFase2 : (faseGlobal == 3 ? candidatosFase3 : (faseGlobal == 4 ? candidatosFase4 : candidatosFase5))}" class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200 text-center opacity-80 cursor-not-allowed">
+                    <div class="w-14 h-14 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-3"><i class="fa-solid fa-user-lock"></i></div>
+                    <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4>
+                    <p class="text-[10px] text-slate-500 line-clamp-1 mb-2" th:text="${candidato.puestoActual}"></p>
+                    <span class="text-[9px] bg-slate-200 text-slate-600 font-bold px-2 py-1 rounded uppercase tracking-wider" th:text="${candidato.statusProceso}"></span>
+                </div>
+            </div>
+        </div>
 
-                <form th:action="@{/hrbp/fase6-solicitar/{id}(id=${candidato.id})}" method="post">
-                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm"><i class="fa-solid fa-check-double mr-1"></i> Autorizar Oferta</button>
+        <!-- Fase 6 (Acción HRBP) -->
+        <div th:if="${faseGlobal == 6}">
+            <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-stamp text-purple-600 mr-2"></i>Fase 6: Autorización de Oferta</h3>
+
+            <!-- Turno de Autorizar (HRBP) -->
+            <div th:unless="${#lists.isEmpty(candidatosFase6HRBP)}" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+                <div th:each="candidato : ${candidatosFase6HRBP}" class="bg-white p-5 rounded-2xl shadow-sm border border-purple-300 text-center relative group hover:shadow-md">
+                    <div class="absolute top-0 right-0 left-0 bg-purple-100 text-purple-700 text-[9px] font-bold py-1.5 rounded-t-2xl uppercase tracking-wider"><i class="fa-solid fa-bell"></i> Requiere Autorización</div>
+                    <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-3 mt-5 group-hover:bg-purple-100 transition"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4>
+                    <div class="bg-emerald-50 text-emerald-700 text-xs font-bold py-1 px-2 rounded mb-4 mt-2">Sueldo: $<span th:text="${#numbers.formatDecimal(candidato.compensacionDeseada, 0, 'COMMA', 0, 'POINT')}"></span></div>
+
+                    <form th:action="@{/hrbp/fase6-solicitar/{id}(id=${candidato.id})}" method="post">
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm"><i class="fa-solid fa-check-double mr-1"></i> Autorizar Oferta</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Monitoreo Envío/Firma (AT y Candidato) -->
+            <div th:unless="${#lists.isEmpty(candidatosFase6AT)}">
+                <h4 class="text-sm font-bold text-slate-500 mb-3"><i class="fa-solid fa-lock mr-1"></i> Ofertas en proceso de Envío / Firma</h4>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div th:each="candidato : ${candidatosFase6AT}" class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200 text-center opacity-80 cursor-not-allowed">
+                        <div class="w-14 h-14 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-3"><i class="fa-solid fa-file-signature"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-2" th:text="${candidato.nombre}"></h4>
+                        <span class="text-[9px] bg-slate-200 text-slate-600 font-bold px-2 py-1 rounded uppercase tracking-wider" th:text="${candidato.statusProceso}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 100% Completado (Fase 7) -->
+        <div th:if="${faseGlobal == 7}">
+            <div class="bg-emerald-50 border border-emerald-200 p-10 rounded-3xl text-center shadow-sm relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 text-emerald-100 opacity-50 text-[200px]"><i class="fa-solid fa-award"></i></div>
+                <div class="relative z-10">
+                    <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fa-solid fa-check-double"></i></div>
+                    <h3 class="text-3xl font-extrabold text-emerald-800 mb-2">¡Proceso 100% Concluido!</h3>
+                    <p class="text-emerald-600 font-medium mb-8">Todos los candidatos finalistas han firmado y cerrado su contratación. Esperando nuevos talentos.</p>
+                    <a th:href="@{/reset}" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-md transition"><i class="fa-solid fa-rotate-left mr-2"></i> Reiniciar Demo</a>
+                </div>
+            </div>
+
+            <h4 class="text-lg font-bold mt-8 mb-4 text-slate-800"><i class="fa-solid fa-users text-emerald-600 mr-2"></i>Nuevos Ingresos</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div th:each="candidato : ${contratados}" class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-300 text-center relative">
+                    <div class="absolute top-2 right-2 text-emerald-500"><i class="fa-solid fa-certificate"></i></div>
+                    <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-3"><i class="fa-solid fa-user-tie"></i></div>
+                    <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4>
+                    <p class="text-[10px] text-slate-500 line-clamp-1 mb-2" th:text="${candidato.puestoActual}"></p>
+                    <div class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded">Ingresa el: <span th:text="${candidato.fechaIngreso}"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Dinámico de Escalación (HRBP) -->
+        <div th:if="${turnoActivo == 'AT' or turnoActivo == 'HM'}" class="mt-12 bg-rose-50/50 p-6 rounded-3xl border border-rose-200 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-rose-800 mb-1">
+                        <i class="fa-solid fa-clock mr-2"></i>Seguimiento de SLA: Tareas pendientes en <span th:text="${turnoActivo}"></span>
+                    </h3>
+                    <p class="text-sm text-rose-600">El sistema detecta un cuello de botella en la fase actual. Envía una alerta directa para agilizar el proceso.</p>
+                </div>
+                <!-- Botón dinámico que manda el parámetro 'areaRetraso' -->
+                <form th:action="@{/hrbp/alertar-retraso-general}" method="post" class="shrink-0">
+                    <input type="hidden" name="areaRetraso" th:value="${turnoActivo}">
+                    <button type="submit" onclick="alert('Alerta de seguimiento enviada con éxito.');" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Exigir avance a <span th:text="${turnoActivo}"></span>
+                    </button>
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- Monitoreo Envío/Firma (AT y Candidato) -->
-        <div th:unless="${#lists.isEmpty(candidatosFase6AT)}">
-            <h4 class="text-sm font-bold text-slate-500 mb-3"><i class="fa-solid fa-lock mr-1"></i> Ofertas en proceso de Envío / Firma</h4>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                <div th:each="candidato : ${candidatosFase6AT}" class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200 text-center opacity-80 cursor-not-allowed">
-                    <div class="w-14 h-14 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-3"><i class="fa-solid fa-file-signature"></i></div>
-                    <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-2" th:text="${candidato.nombre}"></h4>
-                    <span class="text-[9px] bg-slate-200 text-slate-600 font-bold px-2 py-1 rounded uppercase tracking-wider" th:text="${candidato.statusProceso}"></span>
+    <!-- Pestaña 2: Lista y comparativa -->
+    <div id="sec-tab-comparativa" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Lado izquierdo: Tabla comparativa -->
+            <div class="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-x-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-code-compare text-purple-600 mr-2"></i>Comparativa de Candidatos</h3>
+                        <p class="text-xs text-slate-500">Los campos de evaluación se llenan automáticamente conforme avanzan de fase.</p>
+                    </div>
+                </div>
+
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                    <tr class="bg-slate-100 border-b border-slate-200">
+                        <th class="p-3 font-bold text-slate-600 uppercase border-r border-slate-200 w-1/4">Aspecto a evaluar</th>
+                        <th class="p-3 font-bold text-slate-800 text-center border-r border-slate-200 w-[37%]">
+                            <select id="comp-candidato-1" onchange="actualizarTabla()" class="w-full border border-slate-300 p-2 rounded-lg text-sm font-bold bg-white focus:ring-purple-600 mb-1 cursor-pointer"></select>
+                            <span id="t-puesto-1" class="text-[10px] font-normal text-slate-500">-</span>
+                        </th>
+                        <th class="p-3 font-bold text-slate-800 text-center w-[37%]">
+                            <select id="comp-candidato-2" onchange="actualizarTabla()" class="w-full border border-slate-300 p-2 rounded-lg text-sm font-bold bg-white focus:ring-purple-600 mb-1 cursor-pointer"></select>
+                            <span id="t-puesto-2" class="text-[10px] font-normal text-slate-500">-</span>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                    <tr>
+                        <td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Estatus Actual</td>
+                        <td class="p-3 text-center border-r border-slate-200"><span id="t-status-1" class="bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold text-[10px] uppercase"></span></td>
+                        <td class="p-3 text-center"><span id="t-status-2" class="bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold text-[10px] uppercase"></span></td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Escolaridad</td>
+                        <td id="t-esc-1" class="p-3 text-center border-r border-slate-200 text-slate-700"></td>
+                        <td id="t-esc-2" class="p-3 text-center text-slate-700"></td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Idiomas</td>
+                        <td id="t-idiomas-1" class="p-3 text-center border-r border-slate-200 text-slate-700 font-medium"></td>
+                        <td id="t-idiomas-2" class="p-3 text-center text-slate-700 font-medium"></td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Fortalezas Identificadas</td>
+                        <td id="t-fort-1" class="p-3 text-center border-r border-slate-200 text-slate-700"></td>
+                        <td id="t-fort-2" class="p-3 text-center text-slate-700"></td>
+                    </tr>
+                    <tr class="bg-purple-50/40">
+                        <td class="p-3 font-bold text-purple-900 border-r border-slate-200">Score Psicométrico <br><span class="text-[9px] font-normal text-slate-500">(Capturado en Fase 4)</span></td>
+                        <td id="t-score-1" class="p-3 text-center font-extrabold text-purple-700 border-r border-slate-200 text-lg"></td>
+                        <td id="t-score-2" class="p-3 text-center font-extrabold text-purple-700 text-lg"></td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold bg-slate-50/50 border-r border-slate-200">Notas de Entrevista <br><span class="text-[9px] font-normal text-slate-500">(Capturado en Fase 4)</span></td>
+                        <td id="t-notas-1" class="p-3 text-center border-r border-slate-200 text-slate-600 italic"></td>
+                        <td id="t-notas-2" class="p-3 text-center text-slate-600 italic"></td>
+                    </tr>
+                    <tr class="bg-purple-50/30">
+                        <td class="p-3 font-bold text-purple-900 border-r border-slate-200">Dictamen AT</td>
+                        <td id="t-rec-1" class="p-3 text-center font-bold border-r border-slate-200"></td>
+                        <td id="t-rec-2" class="p-3 text-center font-bold"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Lado derecho: Visor CV completo -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-database text-purple-600 mr-1"></i> Expediente BD</h4>
+                        <select id="select-candidato-visor" onchange="actualizarVisorCV(this.value)" class="border border-slate-300 p-1.5 rounded-lg text-[10px] font-bold bg-slate-50 focus:ring-purple-600 cursor-pointer"></select>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-2xl bg-slate-100 p-4 relative overflow-hidden shadow-inner flex-1 h-[550px]">
+                        <div class="bg-white p-6 rounded-xl shadow border border-slate-200 text-left space-y-5 overflow-y-auto h-full cv-scroll">
+
+                            <div class="border-b border-slate-100 pb-4">
+                                <h5 id="pdf-nombre" class="font-extrabold text-2xl text-slate-900 leading-tight"></h5>
+                                <p id="pdf-puesto" class="text-sm text-purple-600 font-bold mt-1"></p>
+                                <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-building mr-1"></i> <strong class="text-slate-700">Empresa actual:</strong> <span id="pdf-empresa"></span></p>
+                            </div>
+
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Estatus Actual</span>
+                                    <span id="pdf-status" class="bg-liverpool-purple text-white text-[11px] font-bold px-3 py-1 rounded"></span>
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Justificación / Notas:</span>
+                                <p id="pdf-justificacion" class="text-xs text-slate-600 italic leading-relaxed"></p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center shadow-sm">
+                                    <span class="text-slate-400 block font-bold text-[9px] uppercase mb-1">Compensación Actual</span>
+                                    <span id="pdf-actual" class="text-slate-800 font-bold text-sm"></span>
+                                </div>
+                                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-center shadow-sm">
+                                    <span class="text-emerald-600 block font-bold text-[9px] uppercase mb-1">Compensación Deseada</span>
+                                    <span id="pdf-deseado" class="text-emerald-700 font-bold text-sm"></span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Datos de Contacto</h6>
+                                <p class="text-xs text-slate-600 mb-1.5"><i class="fa-solid fa-envelope w-4 text-slate-400"></i> <strong class="text-slate-700 mr-1">Correo:</strong> <span id="pdf-correo"></span></p>
+                                <p class="text-xs text-slate-600"><i class="fa-solid fa-phone w-4 text-slate-400"></i> <strong class="text-slate-700 mr-1">Teléfono:</strong> <span id="pdf-telefono"></span></p>
+                            </div>
+
+                            <div>
+                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Perfil Profesional</h6>
+                                <ul class="space-y-2 text-xs text-slate-600">
+                                    <li><strong class="text-slate-700">Escolaridad:</strong> <span id="pdf-esc"></span></li>
+                                    <li><strong class="text-slate-700">Idiomas:</strong> <span id="pdf-idiomas"></span></li>
+                                    <li class="bg-purple-50 p-2 rounded border border-purple-100 mt-2"><strong class="text-purple-700">Compatibilidad Global:</strong> <span id="pdf-compatibilidad" class="font-bold text-purple-600 text-sm ml-1"></span></li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h6 class="text-[11px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-100 pb-1">Habilidades y Fortalezas</h6>
+                                <p id="pdf-fort" class="text-xs text-slate-600 leading-relaxed"></p>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= 100% COMPLETADO (FASE 7) ================= -->
-    <div th:if="${faseGlobal == 7}">
-        <div class="bg-emerald-50 border border-emerald-200 p-10 rounded-3xl text-center shadow-sm relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 text-emerald-100 opacity-50 text-[200px]"><i class="fa-solid fa-award"></i></div>
-            <div class="relative z-10">
-                <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fa-solid fa-check-double"></i></div>
-                <h3 class="text-3xl font-extrabold text-emerald-800 mb-2">¡Proceso 100% Concluido!</h3>
-                <p class="text-emerald-600 font-medium mb-8">Todos los candidatos finalistas han firmado y cerrado su contratación. Esperando nuevos talentos.</p>
-                <a th:href="@{/reset}" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-md transition"><i class="fa-solid fa-rotate-left mr-2"></i> Reiniciar Demo</a>
+    <!-- Pestaña 3: Visor Global (JS DINÁMICO) -->
+    <div id="sec-tab-global" class="hidden space-y-6">
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-earth-americas text-blue-500 mr-2"></i>Radar Global de Candidatos</h3>
+                    <p class="text-xs text-slate-500">Vista unificada de todos los perfiles en el sistema, generada automáticamente.</p>
+                </div>
+                <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Tracker Activo
+                </span>
             </div>
-        </div>
 
-        <h4 class="text-lg font-bold mt-8 mb-4 text-slate-800"><i class="fa-solid fa-users text-emerald-600 mr-2"></i>Nuevos Ingresos</h4>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <div th:each="candidato : ${contratados}" class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-300 text-center relative">
-                <div class="absolute top-2 right-2 text-emerald-500"><i class="fa-solid fa-certificate"></i></div>
-                <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-3"><i class="fa-solid fa-user-tie"></i></div>
-                <h4 class="font-bold text-sm text-slate-800 line-clamp-1 mb-1" th:text="${candidato.nombre}"></h4>
-                <p class="text-[10px] text-slate-500 line-clamp-1 mb-2" th:text="${candidato.puestoActual}"></p>
-                <div class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded">Ingresa el: <span th:text="${candidato.fechaIngreso}"></span></div>
+            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="p-4">Candidato</th>
+                        <th class="p-4">Puesto Actual</th>
+                        <th class="p-4">Estatus del Proceso</th>
+                        <th class="p-4 text-center">Fase Estimada</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tabla-global-body" class="divide-y divide-slate-100">
+                    <!-- SE LLENA POR JAVASCRIPT -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
 </main>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var cF2 = /*[[${candidatosFase2}]]*/ [];
+    var cF3 = /*[[${candidatosFase3}]]*/ [];
+    var cF4 = /*[[${candidatosFase4}]]*/ [];
+    var cF5 = /*[[${candidatosFase5}]]*/ [];
+    var cF6H = /*[[${candidatosFase6HRBP}]]*/ [];
+    var cF6A = /*[[${candidatosFase6AT}]]*/ [];
+    var cCont = /*[[${contratados}]]*/ [];
+
+    // Lista maestra enviada por el backend (idéntico a AT y HM)
+    var todosGlobales = /*[[${todosLosCandidatos}]]*/ [];
+
+    if (!todosGlobales || todosGlobales.length === 0) {
+        todosGlobales = [].concat(cF2||[], cF3||[], cF4||[], cF5||[], cF6H||[], cF6A||[], cCont||[]);
+    }
+
+    // Limpiar duplicados
+    var map = new Map();
+    todosGlobales.forEach(c => {
+        if(c && c.id) map.set(c.id, c);
+    });
+    var todosUnicos = Array.from(map.values());
+
+    function getPhaseScore(status) {
+        if(!status) return 0;
+        var s = status.toUpperCase();
+        if(s.includes("CONTRATADO") || s.includes("INGRESO")) return 70;
+        if(s.includes("FIRMADA") || s.includes("OFERTA")) return 60;
+        if(s.includes("HM CONFIRMADA") || s.includes("SELECCION") || s.includes("FINALISTA")) return 50;
+        if(s.includes("ENTREVISTA CONFIRMADA") || s.includes("POOL") || s.includes("ATRACCION")) return 40;
+        if(s.includes("CONTACTADO") || s.includes("EXPEDIENTE") || s.includes("APROBADO") || s.includes("VALIDACION HM")) return 30;
+        return 10;
+    }
+
+    todosUnicos.sort((a, b) => getPhaseScore(b.statusProceso) - getPhaseScore(a.statusProceso));
+    var candidatosVivos = todosUnicos;
+    /*]]>*/
+
+    const formatSueldo = (num) => num ? '$' + num.toLocaleString('es-MX') : 'No especificado';
+    const pendienteBage = '<span class="bg-slate-100 text-slate-400 text-[9px] uppercase font-bold px-2 py-1 rounded">Pendiente</span>';
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const select1 = document.getElementById('comp-candidato-1');
+        const select2 = document.getElementById('comp-candidato-2');
+        const selectVisor = document.getElementById('select-candidato-visor');
+
+        if(select1 && select2 && selectVisor) {
+            select1.innerHTML = ''; select2.innerHTML = ''; selectVisor.innerHTML = '';
+
+            candidatosVivos.forEach(c => {
+                select1.add(new Option(c.nombre, c.id));
+                select2.add(new Option(c.nombre, c.id));
+                selectVisor.add(new Option(c.nombre, c.id));
+            });
+
+            if(candidatosVivos.length > 0) {
+                select1.value = candidatosVivos[0].id;
+                if(candidatosVivos.length > 1) {
+                    select2.value = candidatosVivos[1].id;
+                } else {
+                    select2.value = candidatosVivos[0].id;
+                }
+                selectVisor.value = candidatosVivos[0].id;
+
+                actualizarTabla();
+                actualizarVisorCV(selectVisor.value);
+            }
+        }
+    });
+
+    function actualizarTabla() {
+        const id1 = document.getElementById('comp-candidato-1').value;
+        const id2 = document.getElementById('comp-candidato-2').value;
+
+        const c1 = todosUnicos.find(c => c.id == id1) || {};
+        const c2 = todosUnicos.find(c => c.id == id2) || {};
+
+        document.getElementById('t-puesto-1').innerText = c1.puestoActual || '-';
+        document.getElementById('t-puesto-2').innerText = c2.puestoActual || '-';
+        document.getElementById('t-status-1').innerText = c1.statusProceso || '-';
+        document.getElementById('t-status-2').innerText = c2.statusProceso || '-';
+        document.getElementById('t-esc-1').innerText = c1.escolaridad || '-';
+        document.getElementById('t-esc-2').innerText = c2.escolaridad || '-';
+        document.getElementById('t-idiomas-1').innerText = c1.idiomas || '-';
+        document.getElementById('t-idiomas-2').innerText = c2.idiomas || '-';
+        document.getElementById('t-fort-1').innerText = c1.fortalezas || '-';
+        document.getElementById('t-fort-2').innerText = c2.fortalezas || '-';
+
+        document.getElementById('t-score-1').innerHTML = c1.scorePsicometrico ? c1.scorePsicometrico + '<span class="text-xs text-slate-400">/100</span>' : pendienteBage;
+        document.getElementById('t-score-2').innerHTML = c2.scorePsicometrico ? c2.scorePsicometrico + '<span class="text-xs text-slate-400">/100</span>' : pendienteBage;
+        document.getElementById('t-notas-1').innerHTML = c1.notasEntrevista ? '"' + c1.notasEntrevista + '"' : pendienteBage;
+        document.getElementById('t-notas-2').innerHTML = c2.notasEntrevista ? '"' + c2.notasEntrevista + '"' : pendienteBage;
+
+        const pintarRec = (rec) => {
+            if(!rec) return pendienteBage;
+            return rec === 'Recomendado' ? `<span class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> ${rec}</span>` : `<span class="text-rose-600"><i class="fa-solid fa-circle-xmark"></i> ${rec}</span>`;
+        };
+
+        document.getElementById('t-rec-1').innerHTML = pintarRec(c1.recomendacionAT);
+        document.getElementById('t-rec-2').innerHTML = pintarRec(c2.recomendacionAT);
+    }
+
+    function actualizarVisorCV(id) {
+        const c = todosUnicos.find(c => c.id == id) || {};
+
+        document.getElementById('pdf-nombre').innerText = c.nombre || 'No disponible';
+        document.getElementById('pdf-correo').innerText = c.correo || 'No disponible';
+        document.getElementById('pdf-telefono').innerText = c.telefono || 'No disponible';
+        document.getElementById('pdf-puesto').innerText = c.puestoActual || 'No disponible';
+        document.getElementById('pdf-empresa').innerText = c.empresaActual || 'No disponible';
+        document.getElementById('pdf-actual').innerText = formatSueldo(c.compensacionActual);
+        document.getElementById('pdf-deseado').innerText = formatSueldo(c.compensacionDeseada);
+        document.getElementById('pdf-esc').innerText = c.escolaridad || 'No disponible';
+        document.getElementById('pdf-idiomas').innerText = c.idiomas || 'No disponible';
+        document.getElementById('pdf-compatibilidad').innerText = c.compatibilidad ? c.compatibilidad + '%' : 'No evaluada';
+        document.getElementById('pdf-fort').innerText = c.fortalezas || 'No disponible';
+        document.getElementById('pdf-status').innerText = c.statusProceso || 'Sin Estatus';
+
+        const justificacionText = c.statusJustificacion || c.justificacionRechazo || c.notasEntrevista || 'Sin observaciones adicionales registradas en el sistema.';
+        document.getElementById('pdf-justificacion').innerText = justificacionText;
+    }
+
+    // === FUNCIONES PESTAÑAS Y VISOR GLOBAL ===
+    function renderizarTablaGlobal() {
+        const tbody = document.getElementById('tabla-global-body');
+        if(!tbody) return;
+
+        tbody.innerHTML = '';
+
+        if(candidatosVivos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400 text-xs">No hay candidatos en el radar.</td></tr>';
+            return;
+        }
+
+        candidatosVivos.forEach(c => {
+            let statusUpper = (c.statusProceso || '').toUpperCase();
+            let faseBadge = '<span class="bg-slate-100 text-slate-500 text-xs font-bold px-3 py-1 rounded-full">En Proceso</span>';
+
+            if(statusUpper.includes('CONTRATADO') || statusUpper.includes('FIRMADA')) {
+                faseBadge = '<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-check-double mr-1"></i> Contratado</span>';
+            } else if(statusUpper.includes('OFERTA') || statusUpper.includes('AUTORIZACION')) {
+                faseBadge = '<span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-file-signature mr-1"></i> Oferta / HRBP</span>';
+            } else if(statusUpper.includes('HM') || statusUpper.includes('FINALISTA')) {
+                faseBadge = '<span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-user-tie mr-1"></i> En HM</span>';
+            } else {
+                faseBadge = '<span class="bg-pink-100 text-liverpool-pink text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-headset mr-1"></i> En AT</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-50 transition';
+            tr.innerHTML = `
+                <td class="p-4">
+                    <div class="font-bold text-slate-800">${c.nombre || 'Desconocido'}</div>
+                    <div class="text-[10px] text-slate-400">${c.correo || 'Sin correo'}</div>
+                </td>
+                <td class="p-4 text-slate-600 text-xs font-medium">${c.puestoActual || '-'}</td>
+                <td class="p-4">
+                    <span class="bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">${c.statusProceso || 'SIN ESTATUS'}</span>
+                </td>
+                <td class="p-4 text-center">
+                    ${faseBadge}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function cambiarTab(tab) {
+        const secFlujo = document.getElementById('sec-tab-flujo');
+        const secComp = document.getElementById('sec-tab-comparativa');
+        const secGlobal = document.getElementById('sec-tab-global');
+
+        const btnFlujo = document.getElementById('btn-tab-flujo');
+        const btnComp = document.getElementById('btn-tab-comparativa');
+        const btnGlobal = document.getElementById('btn-tab-global');
+
+        // Ocultar todo
+        if(secFlujo) secFlujo.classList.add('hidden');
+        if(secComp) secComp.classList.add('hidden');
+        if(secGlobal) secGlobal.classList.add('hidden');
+
+        // Resetear botones
+        const baseClass = "py-2.5 px-4 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-2 whitespace-nowrap";
+        if(btnFlujo) btnFlujo.className = baseClass;
+        if(btnComp) btnComp.className = baseClass;
+        if(btnGlobal) btnGlobal.className = baseClass;
+
+        // Mostrar seleccionado
+        const activeClass = "py-2.5 px-4 border-b-2 border-white text-white flex items-center gap-2 whitespace-nowrap";
+        if(tab === 'flujo') {
+            if(secFlujo) secFlujo.classList.remove('hidden');
+            if(btnFlujo) btnFlujo.className = activeClass;
+        } else if(tab === 'comparativa') {
+            if(secComp) secComp.classList.remove('hidden');
+            if(btnComp) btnComp.className = activeClass;
+        } else if(tab === 'global') {
+            if(secGlobal) secGlobal.classList.remove('hidden');
+            if(btnGlobal) btnGlobal.className = activeClass;
+            renderizarTablaGlobal();
+        }
+    }
+</script>
 </body>
 </html>

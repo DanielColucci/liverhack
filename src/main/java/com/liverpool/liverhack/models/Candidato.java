@@ -29,12 +29,10 @@ public class Candidato {
     private String recomendacionAT;
     private String notasEntrevista;
 
-    // NUEVO CAMPO FASE 6
     private String fechaIngreso;
 
     public Candidato() {}
 
-    // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNombre() { return nombre; }
